@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 6%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 263 70% 58%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 174 94% 51%;
+    --secondary-foreground: 0 0% 6%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 4% 64%;
+    --accent: 174 94% 51%;
+    --accent-foreground: 0 0% 6%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 263 70% 58%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-dark text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary;
+}
+
+/* Glow Effects */
+.glow-primary {
+  box-shadow: 0 0 20px theme('colors.primary.DEFAULT / 40%'),
+              0 0 40px theme('colors.primary.DEFAULT / 20%');
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px theme('colors.accent.DEFAULT / 40%'),
+              0 0 40px theme('colors.accent.DEFAULT / 20%');
+}
+
+.glow-quantum {
+  box-shadow: 0 0 20px theme('colors.quantum.glow / 40%'),
+              0 0 60px theme('colors.quantum.glow / 20%');
+}
+
+/* Glass Effect */
+.glass {
+  @apply bg-dark-100/60 backdrop-blur-xl border border-white/10;
+}
+
+/* Cyber Grid Background */
+.cyber-grid {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(124, 58, 237, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(124, 58, 237, 0.05) 1px, transparent 1px);
+}
+
+/* Gradient Text */
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-quantum;
+}
+
+/* Card Styles */
+.card-quantum {
+  @apply relative overflow-hidden rounded-2xl;
+  background: linear-gradient(135deg, 
+    rgba(26, 26, 46, 0.8) 0%, 
+    rgba(15, 52, 96, 0.6) 100%);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+}
+
+.card-quantum::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(124, 58, 237, 0.5), 
+    rgba(20, 245, 221, 0.5), 
+    transparent);
+}
+
+/* Button Styles */
+.btn-quantum {
+  @apply relative px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+  @apply bg-gradient-to-r from-primary to-primary-700;
+  @apply hover:shadow-glow hover:scale-105;
+  @apply active:scale-95;
+}
+
+.btn-quantum::before {
+  content: '';
+  @apply absolute inset-0 rounded-xl opacity-0 transition-opacity;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+}
+
+.btn-quantum:hover::before {
+  @apply opacity-100;
+}
+
+/* Input Styles */
+.input-quantum {
+  @apply w-full px-4 py-3 rounded-xl transition-all duration-300;
+  @apply bg-dark-100 border border-primary/30;
+  @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none;
+  @apply placeholder:text-muted-foreground;
+}
+
+/* Animations */
+@keyframes quantum-shift {
+  0%, 100% { 
+    background-position: 0% 50%;
+  }
+  50% { 
+    background-position: 100% 50%;
+  }
+}
+
+.animate-quantum-shift {
+  background-size: 200% 200%;
+  animation: quantum-shift 3s ease infinite;
+}
+
+/* Captain Whiskers Mascot Animation */
+@keyframes whisker-twitch {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+}
+
+@keyframes tail-wag {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+@keyframes blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+.whisker-animate {
+  animation: whisker-twitch 2s ease-in-out infinite;
+}
+
+.tail-animate {
+  animation: tail-wag 1s ease-in-out infinite;
+  transform-origin: bottom left;
+}
+
+.blink-animate {
+  animation: blink 3s ease-in-out infinite;
+}
