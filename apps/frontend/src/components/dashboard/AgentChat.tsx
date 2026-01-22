@@ -2,9 +2,19 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Mic, Volume2 } from 'lucide-react'
+import {
+  Send,
+  Volume2,
+  Sparkles,
+  Gauge,
+  AlertTriangle,
+  Activity,
+  BadgeDollarSign,
+  Clock,
+} from 'lucide-react'
 import { api } from '@/lib/api'
 import { toast } from 'react-hot-toast'
+import { useWallet } from '@/contexts/WalletContext'
 
 interface Message {
   id: string
@@ -19,6 +29,7 @@ interface AgentChatProps {
 }
 
 export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
+  const { wallet } = useWallet()
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -30,6 +41,76 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const suggestedPrompts = [
+    'Optimize portfolio for low risk with 60% USDC',
+    'Send 10 USDC to 0x... and log on ArcScan',
+    'Run x402 pay-per-call for market data',
+    'Verify last settlement with BFT quorum',
+  ]
+
+  const clamp = (value: number, min: number, max: number) =>
+    Math.min(Math.max(value, min), max)
+
+  const getPromptInsights = (text: string) => {
+    const normalized = text.toLowerCase()
+    const words = normalized.trim().split(/\s+/).filter(Boolean)
+    const complexity = clamp(words.length / 18, 0, 1)
+
+    const includesAny = (items: string[]) => items.some((item) => normalized.includes(item))
+    const isMicropayment = includesAny(['x402', 'micropayment', 'pay per call', 'pay-on-success'])
+    const isTransfer = includesAny(['send', 'transfer', 'pay'])
+    const isOptimize = includesAny(['optimize', 'rebalance', 'allocation'])
+    const isVerify = includesAny(['verify', 'consensus', 'bft', 'audit'])
+    const isPolicy = includesAny(['policy', 'limit', 'cap', 'allowlist'])
+
+    let intent = 'Insights'
+    if (isMicropayment) intent = 'x402 Micropayment'
+    else if (isTransfer) intent = 'Transfer'
+    else if (isOptimize) intent = 'Optimization'
+    else if (isVerify) intent = 'Verification'
+    else if (isPolicy) intent = 'Policy Update'
+
+    const keywordHits = [isMicropayment, isTransfer, isOptimize, isVerify, isPolicy].filter(Boolean).length
+    const confidence = clamp(0.45 + keywordHits * 0.1 - complexity * 0.08, 0.2, 0.95)
+
+    const amountMatch = normalized.match(/(\d+(\.\d+)?)/)
+    const amount = amountMatch ? parseFloat(amountMatch[1]) : 0
+    const token = normalized.includes('usdc') ? 'USDC' : normalized.includes('arc') ? 'ARC' : null
+
+    const balance =
+      token === 'USDC'
+        ? parseFloat(wallet?.balance?.USDC || '0')
+        : token === 'ARC'
+          ? parseFloat(wallet?.balance?.ARC || '0')
+          : 0
+
+    const impactPct = balance > 0 && amount > 0 ? clamp((amount / balance) * 100, 0, 100) : null
+
+    const riskBase = 0.2 + (isTransfer ? 0.2 : 0) + (isOptimize ? 0.1 : 0) + (isVerify ? 0.05 : 0)
+    const amountRisk = balance > 0 && amount > 0 ? clamp(amount / balance, 0, 0.5) : 0
+    const risk = clamp(riskBase + amountRisk + complexity * 0.15, 0.05, 0.95)
+
+    const estimatedFee =
+      amount > 0 && token === 'USDC' ? Math.max(0.002, amount * 0.005) : null
+
+    const latency = 1.5 + complexity * 2.5 + (isVerify ? 1 : 0)
+    const path = isMicropayment ? 'x402 → Gateway → Arc' : 'BFT → Arc settlement'
+
+    return {
+      intent,
+      confidence,
+      risk,
+      estimatedFee,
+      impactPct,
+      path,
+      latency,
+      token,
+      amount,
+    }
+  }
+
+  const insights = getPromptInsights(input)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -59,7 +140,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
       // Call backend agent API
       const result = await api.makeAgentDecision({
         instruction: userInput,
-        portfolioState: {},
+        portfolioState: wallet?.balance || {},
         marketData: {},
         riskTolerance: 0.5,
       })
@@ -102,6 +183,112 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
 
   return (
     <div className="flex flex-col h-80">
+      {/* Prompt helpers */}
+      {!input.trim() && (
+        <div className="mb-4">
+          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            Try a prompt to see live decision stats
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {suggestedPrompts.map((prompt) => (
+              <button
+                key={prompt}
+                onClick={() => setInput(prompt)}
+                className="px-3 py-1 rounded-full text-xs bg-dark-100 hover:bg-primary/10 border border-white/10 transition-colors"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Live prompt insights */}
+      {input.trim() && (
+        <div className="mb-4 rounded-xl border border-white/10 bg-dark-100/60 p-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+            <span className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              Live prompt insights
+            </span>
+            <span className="text-primary font-medium">{insights.intent}</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-dark-100 p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Gauge className="w-4 h-4 text-primary" />
+                Confidence
+              </div>
+              <div className="text-lg font-semibold mt-1">
+                {Math.round(insights.confidence * 100)}%
+              </div>
+              <div className="h-1.5 bg-dark-200 rounded-full mt-2">
+                <div
+                  className="h-1.5 rounded-full bg-primary"
+                  style={{ width: `${Math.round(insights.confidence * 100)}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-dark-100 p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                Risk score
+              </div>
+              <div className="text-lg font-semibold mt-1">
+                {Math.round(insights.risk * 100)}%
+              </div>
+              <div className="h-1.5 bg-dark-200 rounded-full mt-2">
+                <div
+                  className="h-1.5 rounded-full bg-yellow-400"
+                  style={{ width: `${Math.round(insights.risk * 100)}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-dark-100 p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <BadgeDollarSign className="w-4 h-4 text-accent" />
+                Est. fee
+              </div>
+              <div className="text-lg font-semibold mt-1">
+                {insights.estimatedFee !== null ? `~${insights.estimatedFee.toFixed(4)} USDC` : '—'}
+              </div>
+              <div className="text-xs text-muted-foreground mt-2">
+                Based on detected amount and x402 model
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-dark-100 p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Activity className="w-4 h-4 text-green-400" />
+                Balance impact
+              </div>
+              <div className="text-lg font-semibold mt-1">
+                {insights.impactPct !== null ? `${insights.impactPct.toFixed(1)}%` : '—'}
+              </div>
+              <div className="h-1.5 bg-dark-200 rounded-full mt-2">
+                <div
+                  className="h-1.5 rounded-full bg-green-400"
+                  style={{ width: `${insights.impactPct ?? 0}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5" />
+              ETA ~{insights.latency.toFixed(1)}s
+            </span>
+            <span>Path: {insights.path}</span>
+            <span>BFT quorum: 7/11</span>
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2 scrollbar-thin">
         <AnimatePresence initial={false}>

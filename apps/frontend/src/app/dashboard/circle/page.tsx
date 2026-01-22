@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
@@ -13,8 +13,14 @@ import {
   Coins,
   Shield,
   CreditCard,
+  Sparkles,
+  Play,
+  Wand2,
+  Timer,
+  ClipboardList,
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { useWallet } from '@/contexts/WalletContext'
 
 type CircleConfig = {
   consoleUrl: string
@@ -32,6 +38,8 @@ export default function CirclePage() {
   const [authToken, setAuthToken] = useState(api.getStoredAuthToken() || '')
   const [paymentId, setPaymentId] = useState<string | null>(null)
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null)
+  const [isAtomicRunning, setIsAtomicRunning] = useState(false)
+  const { wallet } = useWallet()
   const [paymentForm, setPaymentForm] = useState({
     payee: '',
     amount: '',
@@ -83,6 +91,39 @@ export default function CirclePage() {
     } catch (error: any) {
       setPaymentStatus('error')
       toast.error(error.message || 'Failed to create micropayment')
+    }
+  }
+
+  const handleAtomicSettlement = async () => {
+    if (!paymentForm.payee || !paymentForm.amount) {
+      toast.error('Payee and amount are required.')
+      return
+    }
+
+    try {
+      setIsAtomicRunning(true)
+      setPaymentStatus('creating')
+      const result: any = await api.createMicropayment({
+        payee: paymentForm.payee,
+        amount: paymentForm.amount,
+        apiEndpoint: paymentForm.apiEndpoint || undefined,
+        providerId: paymentForm.providerId || undefined,
+        model: paymentForm.model as any,
+        description: paymentForm.description || undefined,
+      })
+      const id = result.id || result.requestId || result?.data?.id
+      setPaymentId(id)
+      setPaymentStatus('authorizing')
+      await api.authorizeMicropayment(id)
+      setPaymentStatus('completing')
+      await api.completeMicropayment(id, { ok: true, atomic: true })
+      setPaymentStatus('completed')
+      toast.success('Atomic settlement completed')
+    } catch (error: any) {
+      setPaymentStatus('error')
+      toast.error(error.message || 'Atomic settlement failed')
+    } finally {
+      setIsAtomicRunning(false)
     }
   }
 
@@ -148,6 +189,80 @@ export default function CirclePage() {
       {enabled ? 'Configured' : 'Not configured'}
     </span>
   )
+
+  const statusStepMap: Record<string, number> = {
+    creating: 1,
+    created: 1,
+    authorizing: 2,
+    authorized: 2,
+    completing: 3,
+    completed: 3,
+    failing: 3,
+    failed: 3,
+    refunding: 3,
+    refunded: 3,
+    error: 3,
+  }
+
+  const currentStep = paymentStatus ? statusStepMap[paymentStatus] || 0 : 0
+  const hasError = paymentStatus === 'error' || paymentStatus === 'failed'
+
+  const renderStep = (step: number, title: string, description: string) => {
+    const isActive = currentStep === step && ['creating', 'authorizing', 'completing'].includes(paymentStatus || '')
+    const isDone = currentStep > step || (currentStep === step && !isActive && !hasError)
+    const isError = hasError && currentStep === step
+
+    const baseClass = 'p-4 rounded-xl border flex flex-col gap-2'
+    const stateClass = isError
+      ? 'border-red-500/40 bg-red-500/10 text-red-200'
+      : isDone
+        ? 'border-green-500/40 bg-green-500/10 text-green-200'
+        : isActive
+          ? 'border-primary/40 bg-primary/10 text-white'
+          : 'border-white/10 bg-dark-100 text-muted-foreground'
+
+    return (
+      <div className={`${baseClass} ${stateClass}`}>
+        <div className="text-sm font-semibold">{title}</div>
+        <div className="text-xs">{description}</div>
+      </div>
+    )
+  }
+
+  const amountValue = parseFloat(paymentForm.amount || '0')
+  const estimatedFee = amountValue > 0 ? Math.max(0.002, amountValue * 0.005) : null
+  const estimatedLatency = paymentForm.model === 'bundled' ? '2-4s' : '3-6s'
+
+  const quickStartSteps = useMemo(
+    () => [
+      'Paste a JWT token (from /auth/login)',
+      'Enter payee + amount',
+      'Run Atomic Settle',
+    ],
+    [],
+  )
+
+  const handleFillDemo = () => {
+    if (!wallet?.address) {
+      toast.error('Connect a wallet to auto-fill the payee address.')
+    }
+    setPaymentForm({
+      payee: wallet?.address || paymentForm.payee,
+      amount: paymentForm.amount || '0.10',
+      apiEndpoint: paymentForm.apiEndpoint || '/api/agent/decide',
+      providerId: paymentForm.providerId || 'gemini-flash',
+      model: paymentForm.model || 'pay_per_call',
+      description: paymentForm.description || 'Agent inference (x402)',
+    })
+  }
+
+  const handleUseWalletAsPayee = () => {
+    if (!wallet?.address) {
+      toast.error('Connect a wallet first.')
+      return
+    }
+    setPaymentForm({ ...paymentForm, payee: wallet.address })
+  }
 
   return (
     <DashboardLayout>
@@ -271,8 +386,36 @@ export default function CirclePage() {
               x402 Micropayments (Gateway)
             </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Create, authorize, and complete x402 micropayments backed by Circle Gateway.
+              Create, authorize, and complete x402 micropayments with atomic settlement on Arc.
             </p>
+
+            <div className="mb-6 rounded-xl border border-white/10 bg-dark-100/60 p-4">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                <Sparkles className="w-4 h-4 text-primary" />
+                Quickstart
+              </div>
+              <div className="grid md:grid-cols-3 gap-3 text-xs text-muted-foreground">
+                {quickStartSteps.map((step) => (
+                  <div key={step} className="rounded-lg border border-white/10 bg-dark-100 px-3 py-2">
+                    {step}
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-3 mt-4">
+                <button onClick={handleFillDemo} className="btn-quantum inline-flex items-center gap-2">
+                  <Wand2 className="w-4 h-4" />
+                  Fill Demo Values
+                </button>
+                <button
+                  onClick={handleAtomicSettlement}
+                  disabled={isAtomicRunning}
+                  className="btn-quantum inline-flex items-center gap-2 disabled:opacity-60"
+                >
+                  <Play className="w-4 h-4" />
+                  {isAtomicRunning ? 'Running Atomic Settle...' : 'Atomic Settle'}
+                </button>
+              </div>
+            </div>
 
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div>
@@ -283,6 +426,12 @@ export default function CirclePage() {
                   placeholder="0xPayeeAddress"
                   className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
                 />
+                <button
+                  onClick={handleUseWalletAsPayee}
+                  className="mt-2 text-xs text-primary hover:underline"
+                >
+                  Use connected wallet
+                </button>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Amount (USDC)</label>
@@ -313,6 +462,15 @@ export default function CirclePage() {
                   <option value="pay_on_success">Pay On Success</option>
                   <option value="bundled">Bundled</option>
                 </select>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Provider ID (optional)</label>
+                <input
+                  value={paymentForm.providerId}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, providerId: e.target.value })}
+                  placeholder="gemini-flash"
+                  className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
+                />
               </div>
               <div className="md:col-span-2">
                 <label className="text-sm text-muted-foreground">Description</label>
@@ -350,6 +508,43 @@ export default function CirclePage() {
                 {paymentStatus && <span>({paymentStatus})</span>}
               </div>
             )}
+
+            <div className="mt-6 grid md:grid-cols-3 gap-4">
+              {renderStep(1, 'Create', 'EIP-712 + PQ signature')}
+              {renderStep(2, 'Authorize', 'x402 gateway authorization')}
+              {renderStep(3, 'Complete', 'Atomic settlement on Arc')}
+            </div>
+
+            <div className="mt-6 grid md:grid-cols-3 gap-4">
+              <div className="rounded-xl border border-white/10 bg-dark-100 p-4">
+                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                  <BadgeDollarSign className="w-4 h-4 text-accent" />
+                  Estimated fee
+                </div>
+                <div className="text-lg font-semibold mt-2">
+                  {estimatedFee ? `~${estimatedFee.toFixed(4)} USDC` : '—'}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">Estimate only</div>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-dark-100 p-4">
+                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                  <Timer className="w-4 h-4 text-primary" />
+                  Estimated latency
+                </div>
+                <div className="text-lg font-semibold mt-2">{estimatedLatency}</div>
+                <div className="text-xs text-muted-foreground mt-1">BFT quorum: 7/11</div>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-dark-100 p-4">
+                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4 text-green-400" />
+                  Settlement path
+                </div>
+                <div className="text-lg font-semibold mt-2">x402 → Arc</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Gateway handles atomic settlement
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Arc Infrastructure */}
