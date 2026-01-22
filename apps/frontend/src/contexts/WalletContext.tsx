@@ -88,12 +88,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [connectError])
 
   const connectWallet = () => {
-    const injectedConnector = connectors.find((connector) => connector.id === 'injected') || connectors[0]
-    if (!injectedConnector) {
-      toast.error('No wallet connector available. Please install MetaMask.')
+    const hasInjected = typeof window !== 'undefined' && (window as any).ethereum
+    const injectedConnector = connectors.find((connector) => connector.id === 'injected')
+    const walletConnectConnector = connectors.find((connector) => connector.id === 'walletConnect')
+
+    if (hasInjected && injectedConnector) {
+      connect({ connector: injectedConnector })
       return
     }
-    connect({ connector: injectedConnector })
+
+    if (walletConnectConnector) {
+      connect({ connector: walletConnectConnector })
+      return
+    }
+
+    toast.error(
+      'Provider not found. Install MetaMask or configure WalletConnect to continue.',
+    )
   }
 
   const disconnectWallet = () => {

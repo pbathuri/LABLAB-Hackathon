@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http } from 'wagmi'
-import { injected } from 'wagmi/connectors'
+import { injected, walletConnect } from 'wagmi/connectors'
 import { mainnet } from 'wagmi/chains'
 import { useState, type ReactNode } from 'react'
 import { Toaster } from 'react-hot-toast'
@@ -26,10 +26,28 @@ const arcTestnet = {
   testnet: true,
 } as const
 
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
+
 // Wagmi config
 const config = createConfig({
   chains: [arcTestnet, mainnet],
-  connectors: [injected()],
+  connectors: [
+    injected({ shimDisconnect: true }),
+    ...(walletConnectProjectId
+      ? [
+          walletConnect({
+            projectId: walletConnectProjectId,
+            metadata: {
+              name: 'Captain Whiskers',
+              description: 'Trustless AI treasury on Arc',
+              url: 'https://frontend-ten-pi-54.vercel.app',
+              icons: ['https://frontend-ten-pi-54.vercel.app/images/captain-whiskers-astronaut.svg'],
+            },
+            showQrModal: true,
+          }),
+        ]
+      : []),
+  ],
   transports: {
     [arcTestnet.id]: http(),
     [mainnet.id]: http(),
