@@ -27,8 +27,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<WalletData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isDemoConnected, setIsDemoConnected] = useState(false)
 
   const refreshWallet = useCallback(async () => {
+    if (isDemoConnected) {
+      return
+    }
+
     if (!address || !isConnected) {
       setWallet(null)
       return
@@ -70,7 +75,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }, [address, balance, chainId, isConnected])
+  }, [address, balance, chainId, isConnected, isDemoConnected])
 
   useEffect(() => {
     if (isConnected && address) {
@@ -102,19 +107,29 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    toast.error(
-      'Provider not found. Install MetaMask or configure WalletConnect to continue.',
-    )
+    setIsDemoConnected(true)
+    setWallet({
+      address: '0xDEMOcAptainWhiskers000000000000000000000',
+      balance: {
+        USDC: '250.00',
+        ARC: '8.50',
+      },
+      network: 'arc-testnet',
+    })
+    toast.success('Demo wallet connected (simulation mode).')
   }
 
   const disconnectWallet = () => {
     wagmiDisconnect()
+    setIsDemoConnected(false)
     setWallet(null)
     setError(null)
   }
 
+  const connectedState = isConnected || isDemoConnected
+
   return (
-    <WalletContext.Provider value={{ wallet, isLoading, error, isConnected, isConnecting: isPending, refreshWallet, connect: connectWallet, disconnect: disconnectWallet }}>
+    <WalletContext.Provider value={{ wallet, isLoading, error, isConnected: connectedState, isConnecting: isPending, refreshWallet, connect: connectWallet, disconnect: disconnectWallet }}>
       {children}
     </WalletContext.Provider>
   )

@@ -423,8 +423,9 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       return
     }
 
+    const preview = getPromptInsights(userInput)
+
     if (!api.getStoredAuthToken()) {
-      const preview = getPromptInsights(userInput)
       addAgentMessage(
         `I can run a data-driven dry run now, or execute live once you add a JWT in Circle → Backend Authentication.`,
       )
@@ -439,6 +440,12 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     }
 
     try {
+      addAgentMessage(
+        `Quick preview ready: ${preview.intent} · Confidence ${Math.round(
+          preview.confidence * 100,
+        )}% · Risk ${Math.round(preview.risk * 100)}%. Executing live now...`,
+      )
+
       // Call backend agent API
       const result = await api.makeAgentDecision({
         instruction: userInput,

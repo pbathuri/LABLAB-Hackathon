@@ -113,9 +113,11 @@ class ApiService {
     return this.getAuthToken()
   }
 
-  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  private async request<T>(endpoint: string, options?: RequestInit, timeoutMs = 5000): Promise<T> {
     try {
       const token = this.getAuthToken()
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
       const headers = new Headers(options?.headers || {})
       headers.set('Content-Type', 'application/json')
 
@@ -126,7 +128,9 @@ class ApiService {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
         headers,
+        signal: options?.signal || controller.signal,
       })
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -231,14 +235,18 @@ class ApiService {
     try {
       // Backend expects portfolioState, marketData, riskTolerance
       // We'll parse the instruction to extract transfer info if it's a transfer command
-      const result = await this.request<{ id: string; explanation?: string }>('/agent/decide', {
-        method: 'POST',
-        body: JSON.stringify({
-          portfolioState: params.portfolioState || { USDC: 1000 },
-          marketData: params.marketData || {},
-          riskTolerance: params.riskTolerance || 0.5,
-        }),
-      })
+      const result = await this.request<{ id: string; explanation?: string }>(
+        '/agent/decide',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            portfolioState: params.portfolioState || { USDC: 1000 },
+            marketData: params.marketData || {},
+            riskTolerance: params.riskTolerance || 0.5,
+          }),
+        },
+        3500,
+      )
       
       return {
         decisionId: result.id,
