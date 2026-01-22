@@ -7,7 +7,6 @@
   "outputDirectory": ".next",
   "regions": ["iad1"],
   "env": {
-    "NEXT_PUBLIC_API_URL": "@captain_whiskers_api_url",
     "NEXT_PUBLIC_ARC_RPC_URL": "https://testnet-rpc.arc.dev",
     "NEXT_PUBLIC_ARC_CHAIN_ID": "5042002",
     "NEXT_PUBLIC_ARCSCAN_URL": "https://testnet.arcscan.io"
