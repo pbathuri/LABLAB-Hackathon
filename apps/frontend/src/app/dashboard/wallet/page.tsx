@@ -6,11 +6,13 @@ import { Wallet, Copy, ExternalLink, ArrowUpRight, ArrowDownLeft, CheckCircle2 }
 import { useWallet } from '@/contexts/WalletContext'
 import { useAccount } from 'wagmi'
 import { useState } from 'react'
+import { SendTransactionModal } from '@/components/transactions/SendTransactionModal'
 
 export default function WalletPage() {
-  const { wallet, isLoading } = useWallet()
+  const { wallet, isLoading, refreshWallet } = useWallet()
   const { address } = useAccount()
   const [copied, setCopied] = useState(false)
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false)
 
   const walletAddress = wallet?.address || address || 'Not connected'
   const arcScanUrl = walletAddress !== 'Not connected' 
@@ -100,13 +102,28 @@ export default function WalletPage() {
             <div className="card-quantum p-6">
               <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
               <div className="space-y-3">
-                <button className="w-full flex items-center justify-between p-4 rounded-xl bg-dark-100 hover:bg-primary/10 transition-colors">
+                <button
+                  onClick={() => setIsSendModalOpen(true)}
+                  disabled={!wallet && !address}
+                  className="w-full flex items-center justify-between p-4 rounded-xl bg-dark-100 hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <div className="flex items-center gap-3">
                     <ArrowUpRight className="w-5 h-5 text-primary" />
                     <span>Send</span>
                   </div>
                 </button>
-                <button className="w-full flex items-center justify-between p-4 rounded-xl bg-dark-100 hover:bg-primary/10 transition-colors">
+                <button
+                  onClick={() => {
+                    const addressToCopy = wallet?.address || address
+                    if (addressToCopy) {
+                      navigator.clipboard.writeText(addressToCopy)
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 2000)
+                    }
+                  }}
+                  disabled={!wallet && !address}
+                  className="w-full flex items-center justify-between p-4 rounded-xl bg-dark-100 hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <div className="flex items-center gap-3">
                     <ArrowDownLeft className="w-5 h-5 text-accent" />
                     <span>Receive</span>
@@ -140,6 +157,14 @@ export default function WalletPage() {
           )}
         </motion.div>
       </div>
+
+      <SendTransactionModal
+        isOpen={isSendModalOpen}
+        onClose={() => setIsSendModalOpen(false)}
+        onSuccess={() => {
+          refreshWallet?.()
+        }}
+      />
     </DashboardLayout>
   )
 }

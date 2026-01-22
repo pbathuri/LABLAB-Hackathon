@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Mic, Volume2 } from 'lucide-react'
+import { api } from '@/lib/api'
+import { toast } from 'react-hot-toast'
 
 interface Message {
   id: string
@@ -48,35 +50,54 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
     }
 
     setMessages(prev => [...prev, userMessage])
+    const userInput = input
     setInput('')
     setIsTyping(true)
     onMoodChange?.('thinking')
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        "Based on my quantum analysis, your portfolio is optimally diversified. The VQE circuit shows a Sharpe ratio of 1.42.",
-        "I've verified this transaction through our BFT consensus layer. 7 out of 11 verifiers have signed.",
-        "Current market conditions suggest maintaining your USDC allocation. Risk level: Low.",
-        "I'm using CRYSTALS-Dilithium signatures for all your transactions. Quantum-safe security enabled.",
-        "Your daily spending policy is set at $500 USDC. You've used $50 so far today. Would you like me to adjust the limit?",
-      ]
+    try {
+      // Call backend agent API
+      const result = await api.makeAgentDecision({
+        instruction: userInput,
+        portfolioState: {},
+        marketData: {},
+        riskTolerance: 0.5,
+      })
 
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'agent',
-        content: responses[Math.floor(Math.random() * responses.length)],
+        content: result.explanation || "I've processed your request. The transaction is being verified by our BFT consensus layer.",
         timestamp: new Date(),
       }
 
       setMessages(prev => [...prev, agentMessage])
+      
+      // If a decision was made, show success
+      if (result.decisionId) {
+        toast.success('Transaction initiated! Waiting for BFT verification...')
+      }
+    } catch (error: any) {
+      console.error('Agent request failed:', error)
+      
+      // Fallback response
+      const agentMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'agent',
+        content: "I'm having trouble processing that request. Please try again or use the Send button for direct transactions.",
+        timestamp: new Date(),
+      }
+      
+      setMessages(prev => [...prev, agentMessage])
+      toast.error(error.message || 'Failed to process request')
+    } finally {
       setIsTyping(false)
       onMoodChange?.('happy')
       onSpeakingChange?.(true)
       
       // Stop speaking animation after a bit
       setTimeout(() => onSpeakingChange?.(false), 2000)
-    }, 1500)
+    }
   }
 
   return (
