@@ -26,22 +26,21 @@ import { ReliabilityModule } from './modules/reliability/reliability.module';
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get('DATABASE_URL');
         
-        // Parse DATABASE_URL if provided (Railway format: postgresql://user:pass@host:port/dbname)
+        // Use DATABASE_URL directly if provided (TypeORM handles parsing)
         if (databaseUrl) {
-          const url = new URL(databaseUrl);
+          // Normalize postgresql:// to postgres:// for TypeORM
+          const normalizedUrl = databaseUrl.replace(/^postgresql:\/\//, 'postgres://');
+          
           return {
             type: 'postgres',
-            host: url.hostname,
-            port: parseInt(url.port) || 5432,
-            username: url.username,
-            password: url.password,
-            database: url.pathname.slice(1), // Remove leading slash
+            url: normalizedUrl, // TypeORM will parse this automatically
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
             synchronize: configService.get('NODE_ENV') !== 'production',
             logging: configService.get('NODE_ENV') === 'development',
-            retryAttempts: 3,
+            retryAttempts: 5,
             retryDelay: 3000,
             autoLoadEntities: true,
+            ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
           };
         }
         
@@ -56,7 +55,7 @@ import { ReliabilityModule } from './modules/reliability/reliability.module';
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: configService.get('NODE_ENV') !== 'production',
           logging: configService.get('NODE_ENV') === 'development',
-          retryAttempts: 3,
+          retryAttempts: 5,
           retryDelay: 3000,
           autoLoadEntities: true,
         };
