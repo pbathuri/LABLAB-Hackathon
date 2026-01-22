@@ -13,19 +13,19 @@ import { VerificationService } from './verification.service';
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 export class VerificationController {
-  constructor(private readonly verificationService: VerificationService) {}
+  constructor(private readonly verificationService: VerificationService) { }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get BFT verification network statistics' })
   @ApiResponse({ status: 200, description: 'Verification stats returned' })
   async getStats() {
-    return this.verificationService.getVerificationStats();
+    return this.verificationService.getVerifierStatus();
   }
 
-  @Get('logs/:decisionId')
-  @ApiOperation({ summary: 'Get verification logs for a decision' })
+  @Get('logs/:verificationId')
+  @ApiOperation({ summary: 'Get verification logs for a verification ID' })
   @ApiResponse({ status: 200, description: 'Verification logs returned' })
-  async getLogs(@Param('decisionId') decisionId: string) {
-    return this.verificationService.getVerificationLogs(decisionId);
+  async getLogs(@Param('verificationId') verificationId: string) {
+    return this.verificationService.checkVerification(verificationId);
   }
 }

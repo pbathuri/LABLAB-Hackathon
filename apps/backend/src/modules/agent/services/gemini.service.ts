@@ -109,10 +109,10 @@ export class GeminiService implements OnModuleInit {
     },
   ];
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) { }
 
   async onModuleInit() {
-    this.apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    this.apiKey = this.configService.get<string>('GEMINI_API_KEY') || '';
     if (!this.apiKey) {
       this.logger.warn('GEMINI_API_KEY not configured - using mock responses');
     }
@@ -236,7 +236,7 @@ export class GeminiService implements OnModuleInit {
         },
       });
 
-      return response.candidates?.[0]?.content?.parts?.[0]?.text || 
+      return response.candidates?.[0]?.content?.parts?.[0]?.text ||
         this.mockExplanation(decision);
     } catch (error) {
       return this.mockExplanation(decision);
@@ -263,7 +263,7 @@ export class GeminiService implements OnModuleInit {
 
   private async callGemini(model: string, request: any): Promise<any> {
     const url = `${this.baseUrl}/models/${model}:generateContent?key=${this.apiKey}`;
-    
+
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -346,7 +346,7 @@ export class GeminiService implements OnModuleInit {
 
   private mockDecision(instruction: string): AgentDecision {
     const lowerInstruction = instruction.toLowerCase();
-    
+
     if (lowerInstruction.includes('buy') || lowerInstruction.includes('purchase')) {
       return {
         action: 'BUY',
@@ -356,7 +356,7 @@ export class GeminiService implements OnModuleInit {
         functionCalls: [{ name: 'execute_trade', parameters: { action: 'BUY', asset: 'ETH', amount: 100 } }],
       };
     }
-    
+
     if (lowerInstruction.includes('sell')) {
       return {
         action: 'SELL',
@@ -366,7 +366,7 @@ export class GeminiService implements OnModuleInit {
         functionCalls: [{ name: 'execute_trade', parameters: { action: 'SELL', asset: 'ETH', amount: 50 } }],
       };
     }
-    
+
     if (lowerInstruction.includes('optimize')) {
       return {
         action: 'OPTIMIZE',

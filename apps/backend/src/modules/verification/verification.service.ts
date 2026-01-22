@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomBytes, createHash } from 'crypto';
-import { ethers } from 'ethers';
+import { ethers, Wallet } from 'ethers';
 import { VerificationLog } from './entities/verification-log.entity';
 import { VerifierNode } from './entities/verifier-node.entity';
 
@@ -51,7 +51,7 @@ export interface VerifierSignature {
 @Injectable()
 export class VerificationService {
   private readonly logger = new Logger(VerificationService.name);
-  
+
   // BFT Parameters
   private readonly TOTAL_VERIFIERS = 11;
   private readonly FAULT_TOLERANCE = 3;  // f
@@ -59,7 +59,7 @@ export class VerificationService {
 
   // Simulated verifier nodes (in production, these would be separate services)
   private verifierNodes: Map<string, {
-    wallet: ethers.Wallet;
+    wallet: any; // Using any to avoid type conflicts with ethers v6
     reliability: number;
     avgLatencyMs: number;
   }> = new Map();
@@ -78,7 +78,7 @@ export class VerificationService {
    */
   private initializeVerifierNodes(): void {
     for (let i = 0; i < this.TOTAL_VERIFIERS; i++) {
-      const wallet = ethers.Wallet.createRandom();
+      const wallet = Wallet.createRandom();
       this.verifierNodes.set(`verifier-${i + 1}`, {
         wallet,
         reliability: 0.9 + Math.random() * 0.1,  // 90-100% reliability
@@ -186,7 +186,7 @@ export class VerificationService {
    */
   aggregateSignatures(signatures: VerifierSignature[]): string {
     // Concatenate signatures in order
-    const sortedSigs = signatures.sort((a, b) => 
+    const sortedSigs = signatures.sort((a, b) =>
       a.address.localeCompare(b.address),
     );
 

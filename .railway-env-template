@@ -1,0 +1,37 @@
+# Backend Environment Variables Template
+# Copy these to Railway dashboard after deployment
+
+# Database (will be auto-set by Railway PostgreSQL service)
+DB_HOST=postgres
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_NAME=captain_whiskers
+
+# Application
+NODE_ENV=production
+PORT=3001
+
+# JWT
+JWT_SECRET=7kbGgPXA63C4JAq5bcwxt9o52RFLpT8fuBvmpoPpo60=
+JWT_EXPIRES_IN=7d
+
+# APIs
+GEMINI_API_KEY=AIzaSyAYWxhjVCfa7yIvCiqJIWm4xi6biLgEoKU
+CIRCLE_API_KEY=10d449cfe62733f77253ddcd466bf71d:1feea152581afa7adcebb320762b1376
+
+# Blockchain
+ARC_RPC_URL=https://rpc.testnet.arc.network
+ARC_CHAIN_ID=5042002
+PRIVATE_KEY=0x59a4c1937c9db471392671e2bf01372c2d19302ad60fd1ab6b98766da90d988d
+WALLET_ADDRESS=0xa395DE9aFC8864ecbA1E03C5519De053EBe4573F
+
+# Contract Addresses
+TREASURY_ADDRESS=0x5B8648f8BE56A43C926783CA0E51FbD0540822B4
+BFT_VERIFICATION_ADDRESS=0x35F8f381428eD56619341B6Ea5E8094D5Bd626a9
+X402_ESCROW_ADDRESS=0xeD6E801A5DdFF38c28CCCac891fD721D5618194E
+USDC_ADDRESS=0x6b0D52c2c75da013cF09eE498F1B0430DD187EFc
+
+# Service URLs (update after deployment)
+QUANTUM_SERVICE_URL=https://captain-whiskers-quantum.up.railway.app
+FRONTEND_URL=https://captain-whiskers.vercel.app

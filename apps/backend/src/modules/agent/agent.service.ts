@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { GeminiService, TradingDecision } from './services/gemini.service';
+import { GeminiService, AgentDecision as GeminiDecision } from './services/gemini.service';
 import {
   AgentDecision,
   DecisionType,
@@ -29,7 +29,7 @@ export class AgentService {
     private verificationService: VerificationService,
     private quantumService: QuantumService,
     private policyService: PolicyService,
-  ) {}
+  ) { }
 
   /**
    * Main entry point for autonomous agent decision-making
@@ -44,13 +44,13 @@ export class AgentService {
     );
 
     // Step 2: Get AI trading decision
-    const aiDecision = await this.geminiService.generateTradingDecision(
-      context.portfolioState,
+    const aiDecision = await this.geminiService.processInstruction(
+      `Optimize portfolio for user with risk tolerance ${context.riskTolerance}`,
       {
-        ...context.marketData,
-        quantumOptimization: quantumAnalysis,
+        portfolio: context.portfolioState,
+        policy: { riskTolerance: context.riskTolerance },
+        recentTransactions: [],
       },
-      context.riskTolerance,
     );
 
     // Step 3: Create decision record
@@ -59,8 +59,8 @@ export class AgentService {
       type: this.mapActionToType(aiDecision.action),
       status: DecisionStatus.PENDING,
       parameters: {
-        asset: aiDecision.asset,
-        quantity: aiDecision.quantity,
+        asset: aiDecision.parameters.asset || 'USDC',
+        quantity: aiDecision.parameters.amount || 0,
       },
       reasoning: aiDecision.reasoning,
       quantumAnalysis: {
@@ -92,10 +92,21 @@ export class AgentService {
     decision.status = DecisionStatus.VERIFYING;
     await this.decisionRepository.save(decision);
 
-    const verificationResult = await this.verificationService.verifyDecision(decision);
+    const verificationResult = await this.verificationService.verifyTransaction({
+      type: decision.type,
+      userId: context.userId,
+      amount: decision.parameters.quantity,
+      parameters: decision.parameters,
+    });
 
-    decision.verificationResult = verificationResult;
-    decision.status = verificationResult.consensusReached
+    decision.verificationResult = {
+      totalSignatures: verificationResult.signatureCount,
+      requiredSignatures: verificationResult.requiredSignatures,
+      verifierAddresses: verificationResult.signatures.map(s => s.address),
+      consensusReached: verificationResult.approved,
+      timestamp: verificationResult.timestamp.toISOString(),
+    };
+    decision.status = verificationResult.approved
       ? DecisionStatus.VERIFIED
       : DecisionStatus.REJECTED;
 
@@ -143,13 +154,12 @@ export class AgentService {
       throw new BadRequestException('Decision not found');
     }
 
-    const tradingDecision: TradingDecision = {
-      action: this.mapTypeToAction(decision.type),
-      asset: decision.parameters.asset,
-      quantity: decision.parameters.quantity,
-      reasoning: decision.reasoning,
+    const tradingDecision: GeminiDecision = {
+      action: this.mapTypeToAction(decision.type) as any,
       confidence: 0.8,
-      riskLevel: 'medium',
+      reasoning: decision.reasoning,
+      parameters: decision.parameters,
+      functionCalls: [],
     };
 
     return this.geminiService.explainDecision(tradingDecision);
