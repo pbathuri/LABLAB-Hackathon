@@ -2,5 +2,13 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS"
+  },
+  "services": {
+    "backend": {
+      "rootDirectory": "apps/backend"
+    },
+    "quantum-service": {
+      "rootDirectory": "apps/quantum-service"
+    }
   }
 }
