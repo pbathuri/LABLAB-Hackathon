@@ -1,11 +1,15 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "npm", "python3", "gcc", "gnumake"]
+nixPkgs = ["nodejs_20", "npm", "gcc", "gnumake"]
 
 [phases.install]
-cmds = ["npm install --build-from-source"]
+cmds = [
+  "npm install --production=false"
+]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = [
+  "npm run build"
+]
 
 [start]
 cmd = "node dist/main.js"

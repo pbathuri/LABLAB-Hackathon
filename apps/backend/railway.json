@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "npm ci && npm run build && node dist/main.js"
+    "startCommand": "node dist/main.js"
   }
 }
