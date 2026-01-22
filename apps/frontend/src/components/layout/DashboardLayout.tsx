@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
@@ -41,9 +41,39 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
+  const [backendStatus, setBackendStatus] = useState<'checking' | 'online' | 'offline'>('checking')
   const pathname = usePathname()
   const router = useRouter()
   const { wallet, disconnect: clearWallet, connect, isConnected, isConnecting } = useWallet()
+
+  useEffect(() => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    let isMounted = true
+
+    const checkBackend = async () => {
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 4000)
+        const response = await fetch(`${baseUrl}/circle/config`, { signal: controller.signal })
+        clearTimeout(timeoutId)
+        if (isMounted) {
+          setBackendStatus(response.ok ? 'online' : 'offline')
+        }
+      } catch (error) {
+        if (isMounted) {
+          setBackendStatus('offline')
+        }
+      }
+    }
+
+    checkBackend()
+    const interval = setInterval(checkBackend, 30000)
+
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [])
 
   const handleDisconnect = () => {
     clearWallet()
@@ -191,6 +221,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Actions */}
             <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-full bg-dark-100 border border-white/10 text-xs">
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    backendStatus === 'online'
+                      ? 'bg-green-400'
+                      : backendStatus === 'offline'
+                        ? 'bg-red-400'
+                        : 'bg-yellow-400 animate-pulse'
+                  }`}
+                />
+                <span className="text-muted-foreground">Backend</span>
+                <span className="font-medium text-white">
+                  {backendStatus === 'online'
+                    ? 'Live'
+                    : backendStatus === 'offline'
+                      ? 'Offline'
+                      : 'Checking'}
+                </span>
+              </div>
               {/* Notifications */}
               <button
                 onClick={() => setShowNotifications(true)}

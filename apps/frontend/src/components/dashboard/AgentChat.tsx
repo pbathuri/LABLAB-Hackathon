@@ -507,7 +507,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
   }
 
   return (
-    <div className="flex flex-col h-80">
+    <div className="flex flex-col h-[520px] lg:h-[560px]">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-dark-100/60 px-4 py-3">
         <div className="text-xs text-muted-foreground">
           Mode:{' '}
