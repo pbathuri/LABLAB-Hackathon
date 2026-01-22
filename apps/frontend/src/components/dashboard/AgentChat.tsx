@@ -204,7 +204,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
         `1) Circle wallet created: ${circleWallet.address.slice(0, 6)}...${circleWallet.address.slice(-4)}.`,
       )
 
-      let gatewayTransfer = {
+      let gatewayTransfer: { amount: string; txHash?: string } = {
         amount: '25',
         txHash: createMockHash(),
       }
