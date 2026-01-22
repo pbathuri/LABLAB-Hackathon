@@ -158,6 +158,11 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     setMessages((prev) => [...prev, agentMessage])
   }, [])
 
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+  const createMockHash = () =>
+    `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`
+
   const shortenHash = (hash?: string | null) => {
     if (!hash) return 'N/A'
     return `${hash.slice(0, 10)}...${hash.slice(-6)}`
@@ -170,83 +175,109 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     if (isDemoRunning) return
 
     const authToken = api.getStoredAuthToken()
-    if (!authToken) {
-      addAgentMessage(
-        "To run the full demo, add your JWT token in the Circle page under 'Backend Authentication'.",
-      )
-      onMoodChange?.('alert')
-      return
-    }
+    const isSimulation = !authToken
 
     setIsDemoRunning(true)
     setIsTyping(true)
     onMoodChange?.('thinking')
     addAgentMessage(
-      'Starting full demo. I’ll chain Circle Wallets → Gateway settlement → x402 → Agent decision.',
+      isSimulation
+        ? 'Starting full demo in simulation mode (no JWT). I’ll still chain the steps so you can see the flow.'
+        : 'Starting full demo. I’ll chain Circle Wallets → Gateway settlement → x402 → Agent decision.',
     )
 
     try {
-      const circleWallet = await api.createCircleWallet({
-        type: 'dev_controlled',
-        label: 'Demo Treasury Wallet',
-      })
+      let circleWallet = {
+        walletId: 'demo-wallet',
+        address: wallet?.address || `0x${Math.random().toString(16).slice(2, 42)}`,
+      }
+
+      if (!isSimulation) {
+        circleWallet = await api.createCircleWallet({
+          type: 'dev_controlled',
+          label: 'Demo Treasury Wallet',
+        })
+      }
+
+      await delay(400)
       addAgentMessage(
         `1) Circle wallet created: ${circleWallet.address.slice(0, 6)}...${circleWallet.address.slice(-4)}.`,
       )
 
-      const gatewayTransfer = await api.createGatewaySettlement({
+      let gatewayTransfer = {
         amount: '25',
-        sourceChain: 'Arc Testnet',
-        destinationChain: 'Arc Testnet',
-        fromWalletId: circleWallet.walletId,
-        toAddress: circleWallet.address,
-        notes: 'Full demo settlement',
-      })
+        txHash: createMockHash(),
+      }
+
+      if (!isSimulation) {
+        gatewayTransfer = await api.createGatewaySettlement({
+          amount: '25',
+          sourceChain: 'Arc Testnet',
+          destinationChain: 'Arc Testnet',
+          fromWalletId: circleWallet.walletId,
+          toAddress: circleWallet.address,
+          notes: 'Full demo settlement',
+        })
+      }
+
+      await delay(400)
       addAgentMessage(
         `2) Gateway settlement completed: ${gatewayTransfer.amount} USDC · Tx ${shortenHash(
           gatewayTransfer.txHash,
         )}.`,
       )
 
-      const payment = await api.createMicropayment({
-        payee: circleWallet.address,
-        amount: '0.01',
-        apiEndpoint: '/api/agent/decide',
-        providerId: 'gemini-flash',
-        model: 'pay_per_call',
-        description: 'Full demo x402 payment',
-      })
-      const paymentId = extractPaymentId(payment)
-      addAgentMessage(`3) x402 payment created: ${paymentId || 'created'}.`)
+      let paymentId = `pay_${Date.now()}`
+      if (!isSimulation) {
+        const payment = await api.createMicropayment({
+          payee: circleWallet.address,
+          amount: '0.01',
+          apiEndpoint: '/api/agent/decide',
+          providerId: 'gemini-flash',
+          model: 'pay_per_call',
+          description: 'Full demo x402 payment',
+        })
+        paymentId = extractPaymentId(payment) || paymentId
+      }
 
-      if (paymentId) {
+      await delay(400)
+      addAgentMessage(`3) x402 payment created: ${paymentId}.`)
+
+      if (!isSimulation) {
         await api.authorizeMicropayment(paymentId)
         addAgentMessage('4) x402 authorized successfully.')
         await api.completeMicropayment(paymentId, { ok: true, demo: true })
         addAgentMessage('5) x402 completed with atomic settlement recorded.')
       } else {
-        addAgentMessage('4) Unable to locate x402 payment id; skipping authorization.')
+        await delay(300)
+        addAgentMessage('4) x402 authorized successfully. (simulated)')
+        await delay(300)
+        addAgentMessage('5) x402 completed with atomic settlement recorded. (simulated)')
       }
 
       const decisionPrompt =
         'Optimize portfolio with low risk, keep 60% USDC, 30% ETH, 10% ARC, and verify via BFT.'
       const decisionStats = getPromptInsights(decisionPrompt)
-      const decision = await api.makeAgentDecision({
-        instruction: decisionPrompt,
-        portfolioState: wallet?.balance || { USDC: 1000 },
-        marketData: {},
-        riskTolerance: 0.4,
-      })
+      const decisionId = isSimulation
+        ? `demo-decision-${Date.now()}`
+        : (await api.makeAgentDecision({
+            instruction: decisionPrompt,
+            portfolioState: wallet?.balance || { USDC: 1000 },
+            marketData: {},
+            riskTolerance: 0.4,
+          })).decisionId
 
       addAgentMessage(
-        `6) Agent decision queued: ${decision.decisionId}. Confidence ${Math.round(
+        `6) Agent decision queued: ${decisionId}. Confidence ${Math.round(
           decisionStats.confidence * 100,
         )}% · Risk ${Math.round(decisionStats.risk * 100)}% · ETA ${decisionStats.latency.toFixed(
           1,
         )}s.`,
       )
       addAgentMessage(
-        'Full demo complete. Open the AI Decision Log to review BFT status and ArcScan links.',
+        isSimulation
+          ? "Full demo complete (simulated). Add a JWT in Circle → Backend Authentication to run it live."
+          : 'Full demo complete. Open the AI Decision Log to review BFT status and ArcScan links.',
       )
       onMoodChange?.('happy')
       onSpeakingChange?.(true)
@@ -284,6 +315,21 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       return
     }
 
+    if (!api.getStoredAuthToken()) {
+      const preview = getPromptInsights(userInput)
+      addAgentMessage(
+        `I can run a data-driven dry run now, or execute live once you add a JWT in Circle → Backend Authentication.`,
+      )
+      addAgentMessage(
+        `Preview: Intent ${preview.intent} · Confidence ${Math.round(
+          preview.confidence * 100,
+        )}% · Risk ${Math.round(preview.risk * 100)}% · ETA ${preview.latency.toFixed(1)}s.`,
+      )
+      setIsTyping(false)
+      onMoodChange?.('happy')
+      return
+    }
+
     try {
       // Call backend agent API
       const result = await api.makeAgentDecision({
@@ -310,17 +356,15 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       }
     } catch (error: any) {
       console.error('Agent request failed:', error)
-      
-      // Fallback response
-      const agentMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'agent',
-        content:
-          "Thanks for your patience — I couldn't complete that yet. Try again, or use the Send button for a direct transfer.",
-        timestamp: new Date(),
-      }
-      
-      setMessages(prev => [...prev, agentMessage])
+      const preview = getPromptInsights(userInput)
+      addAgentMessage(
+        `I hit a snag on the live request, so I ran a data-driven preview instead.`,
+      )
+      addAgentMessage(
+        `Preview: Intent ${preview.intent} · Confidence ${Math.round(
+          preview.confidence * 100,
+        )}% · Risk ${Math.round(preview.risk * 100)}% · ETA ${preview.latency.toFixed(1)}s.`,
+      )
       toast.error(error.message || 'Failed to process request')
     } finally {
       setIsTyping(false)
