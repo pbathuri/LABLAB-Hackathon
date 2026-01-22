@@ -11,6 +11,7 @@ interface WalletContextType {
   error: string | null
   isConnected: boolean
   isConnecting: boolean
+  isSimulation: boolean
   refreshWallet: () => Promise<void>
   connect: () => void
   disconnect: () => void
@@ -129,7 +130,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const connectedState = isConnected || isDemoConnected
 
   return (
-    <WalletContext.Provider value={{ wallet, isLoading, error, isConnected: connectedState, isConnecting: isPending, refreshWallet, connect: connectWallet, disconnect: disconnectWallet }}>
+    <WalletContext.Provider value={{ wallet, isLoading, error, isConnected: connectedState, isConnecting: isPending, isSimulation: isDemoConnected, refreshWallet, connect: connectWallet, disconnect: disconnectWallet }}>
       {children}
     </WalletContext.Provider>
   )

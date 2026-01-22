@@ -44,7 +44,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'online' | 'offline'>('checking')
   const pathname = usePathname()
   const router = useRouter()
-  const { wallet, disconnect: clearWallet, connect, isConnected, isConnecting } = useWallet()
+  const { wallet, disconnect: clearWallet, connect, isConnected, isConnecting, isSimulation } = useWallet()
 
   useEffect(() => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
@@ -159,7 +159,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <div className="text-sm font-medium truncate font-mono">
                     {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
                   </div>
-                  <div className="text-xs text-muted-foreground">Connected</div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>Connected</span>
+                    {isSimulation && (
+                      <span className="inline-flex items-center rounded-full bg-yellow-500/20 px-2 py-0.5 text-[10px] font-medium text-yellow-300">
+                        Simulation Mode
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
