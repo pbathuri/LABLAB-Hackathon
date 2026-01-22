@@ -1,3 +1,0 @@
-# Ignore root Dockerfile - use Nixpacks for services
-Dockerfile
-Dockerfile.root.backup
