@@ -116,13 +116,11 @@ class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     try {
       const token = this.getAuthToken()
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      }
+      const headers = new Headers(options?.headers || {})
+      headers.set('Content-Type', 'application/json')
 
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`
+        headers.set('Authorization', `Bearer ${token}`)
       }
 
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
