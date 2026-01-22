@@ -100,6 +100,12 @@ class KeyPairResponse(BaseModel):
     algorithm: str
 
 
+class EIP712SignRequest(BaseModel):
+    """Request for EIP-712 signing"""
+    typed_data: Dict[str, Any]
+    private_key_hex: str
+
+
 # === Portfolio Optimization Endpoints ===
 
 @app.post("/quantum/optimize-portfolio", response_model=PortfolioOptimizationResponse)
@@ -225,7 +231,7 @@ async def verify_signature(request: VerifyRequest):
 
 
 @app.post("/crypto/eip712/sign")
-async def sign_eip712(typed_data: Dict[str, Any], private_key_hex: str):
+async def sign_eip712(request: EIP712SignRequest):
     """
     Sign EIP-712 typed data using post-quantum signature.
     
@@ -233,8 +239,8 @@ async def sign_eip712(typed_data: Dict[str, Any], private_key_hex: str):
     """
     try:
         result = dilithium_service.sign_eip712(
-            typed_data=typed_data,
-            private_key_hex=private_key_hex,
+            typed_data=request.typed_data,
+            private_key_hex=request.private_key_hex,
         )
         return result
     except Exception as e:

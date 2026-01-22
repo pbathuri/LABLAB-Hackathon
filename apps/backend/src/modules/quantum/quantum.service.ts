@@ -217,7 +217,8 @@ export class QuantumService {
 
   private covariance(x: number[], y: number[]): number {
     const n = Math.min(x.length, y.length);
-    if (n === 0) return 0;
+    // Bug fix: Check for n <= 1 to avoid division by zero when n === 1
+    if (n <= 1) return 0;
 
     const meanX = x.reduce((a, b) => a + b, 0) / n;
     const meanY = y.reduce((a, b) => a + b, 0) / n;

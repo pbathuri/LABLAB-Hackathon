@@ -155,7 +155,7 @@ export class AgentService {
     }
 
     const tradingDecision: GeminiDecision = {
-      action: this.mapTypeToAction(decision.type) as any,
+      action: this.mapTypeToAction(decision.type),
       confidence: 0.8,
       reasoning: decision.reasoning,
       parameters: decision.parameters,
@@ -180,22 +180,28 @@ export class AgentService {
   }
 
   private mapActionToType(action: string): DecisionType {
+    // Handle both uppercase (from Gemini) and lowercase action strings
+    const normalizedAction = action.toLowerCase();
     const mapping: Record<string, DecisionType> = {
       buy: DecisionType.BUY,
       sell: DecisionType.SELL,
       hold: DecisionType.HOLD,
       rebalance: DecisionType.REBALANCE,
+      transfer: DecisionType.BUY, // Map TRANSFER to BUY for now
+      optimize: DecisionType.REBALANCE, // Map OPTIMIZE to REBALANCE
+      purchase_api: DecisionType.PURCHASE_API, // Bug fix: Add missing mapping
     };
-    return mapping[action] || DecisionType.HOLD;
+    return mapping[normalizedAction] || DecisionType.HOLD;
   }
 
-  private mapTypeToAction(type: DecisionType): 'buy' | 'sell' | 'hold' | 'rebalance' {
-    const mapping: Record<DecisionType, 'buy' | 'sell' | 'hold' | 'rebalance'> = {
-      [DecisionType.BUY]: 'buy',
-      [DecisionType.SELL]: 'sell',
-      [DecisionType.HOLD]: 'hold',
-      [DecisionType.REBALANCE]: 'rebalance',
-      [DecisionType.PURCHASE_API]: 'buy',
+  private mapTypeToAction(type: DecisionType): 'BUY' | 'SELL' | 'HOLD' | 'TRANSFER' | 'OPTIMIZE' {
+    // Bug fix: Return uppercase strings to match GeminiDecision interface
+    const mapping: Record<DecisionType, 'BUY' | 'SELL' | 'HOLD' | 'TRANSFER' | 'OPTIMIZE'> = {
+      [DecisionType.BUY]: 'BUY',
+      [DecisionType.SELL]: 'SELL',
+      [DecisionType.HOLD]: 'HOLD',
+      [DecisionType.REBALANCE]: 'OPTIMIZE',
+      [DecisionType.PURCHASE_API]: 'BUY', // PURCHASE_API maps to BUY action
     };
     return mapping[type];
   }

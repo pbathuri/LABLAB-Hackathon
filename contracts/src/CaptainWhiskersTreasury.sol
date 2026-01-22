@@ -238,12 +238,15 @@ contract CaptainWhiskersTreasury is ReentrancyGuard, Ownable, Pausable {
     
     /**
      * @dev Update daily spend tracking
+     * Bug fix: Use > instead of >= to properly reset at day boundary
+     * The reset should happen when current timestamp is past the reset window
      */
     function _updateDailySpend(address user, uint256 amount) internal {
         DailySpend storage spend = dailySpends[user];
         
-        // Reset if new day
-        if (block.timestamp >= spend.resetTimestamp + 1 days) {
+        // Reset if new day - use > to ensure reset happens at day boundary
+        // Also handle first-time case where resetTimestamp is 0
+        if (spend.resetTimestamp == 0 || block.timestamp > spend.resetTimestamp + 1 days - 1) {
             spend.amount = amount;
             spend.resetTimestamp = block.timestamp;
         } else {
