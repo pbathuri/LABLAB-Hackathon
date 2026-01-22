@@ -1,7 +1,2 @@
-node_modules
-.env
-*.log
-dist
-coverage
-.vscode
-.idea
+# Railway should use Nixpacks, not Dockerfile
+# This file ensures Railway uses the correct build method
