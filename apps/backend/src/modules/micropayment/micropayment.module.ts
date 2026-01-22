@@ -5,12 +5,14 @@ import { MicropaymentController } from './micropayment.controller';
 import { PaymentRequest } from './entities/payment-request.entity';
 import { QuantumModule } from '../quantum/quantum.module';
 import { ReliabilityModule } from '../reliability/reliability.module';
+import { CircleModule } from '../circle/circle.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([PaymentRequest]),
     QuantumModule,
     ReliabilityModule,
+    CircleModule,
   ],
   controllers: [MicropaymentController],
   providers: [MicropaymentService],

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { motion } from 'framer-motion'
-import { api } from '@/lib/api'
+import { api, CircleWallet, GatewayTransfer } from '@/lib/api'
 import {
   BadgeDollarSign,
   CheckCircle2,
@@ -40,6 +40,20 @@ export default function CirclePage() {
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null)
   const [isAtomicRunning, setIsAtomicRunning] = useState(false)
   const { wallet } = useWallet()
+  const [circleWallets, setCircleWallets] = useState<CircleWallet[]>([])
+  const [walletType, setWalletType] = useState<'dev_controlled' | 'user_controlled'>('dev_controlled')
+  const [walletLabel, setWalletLabel] = useState('')
+  const [isWalletLoading, setIsWalletLoading] = useState(false)
+  const [gatewayTransfers, setGatewayTransfers] = useState<GatewayTransfer[]>([])
+  const [isGatewayLoading, setIsGatewayLoading] = useState(false)
+  const [gatewayForm, setGatewayForm] = useState({
+    amount: '',
+    sourceChain: 'Arc Testnet',
+    destinationChain: 'Arc Testnet',
+    fromWalletId: '',
+    toAddress: '',
+    notes: '',
+  })
   const [paymentForm, setPaymentForm] = useState({
     payee: '',
     amount: '',
@@ -63,6 +77,82 @@ export default function CirclePage() {
     }
     fetchConfig()
   }, [])
+
+  useEffect(() => {
+    if (!authToken.trim()) {
+      setCircleWallets([])
+      setGatewayTransfers([])
+      return
+    }
+
+    refreshWallets()
+    refreshTransfers()
+  }, [authToken])
+
+  const refreshWallets = async () => {
+    try {
+      setIsWalletLoading(true)
+      const wallets = await api.listCircleWallets()
+      setCircleWallets(wallets)
+    } catch (error: any) {
+      console.error('Failed to load Circle wallets:', error)
+    } finally {
+      setIsWalletLoading(false)
+    }
+  }
+
+  const refreshTransfers = async () => {
+    try {
+      setIsGatewayLoading(true)
+      const transfers = await api.listGatewayTransfers()
+      setGatewayTransfers(transfers)
+    } catch (error: any) {
+      console.error('Failed to load gateway transfers:', error)
+    } finally {
+      setIsGatewayLoading(false)
+    }
+  }
+
+  const handleCreateWallet = async () => {
+    try {
+      setIsWalletLoading(true)
+      const newWallet = await api.createCircleWallet({
+        type: walletType,
+        label: walletLabel || undefined,
+      })
+      setCircleWallets((prev) => [newWallet, ...prev])
+      setWalletLabel('')
+      toast.success('Circle wallet created')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create wallet')
+    } finally {
+      setIsWalletLoading(false)
+    }
+  }
+
+  const handleGatewaySettlement = async () => {
+    if (!gatewayForm.amount) {
+      toast.error('Amount is required.')
+      return
+    }
+    try {
+      setIsGatewayLoading(true)
+      const transfer = await api.createGatewaySettlement({
+        amount: gatewayForm.amount,
+        sourceChain: gatewayForm.sourceChain,
+        destinationChain: gatewayForm.destinationChain,
+        fromWalletId: gatewayForm.fromWalletId || undefined,
+        toAddress: gatewayForm.toAddress || undefined,
+        notes: gatewayForm.notes || undefined,
+      })
+      setGatewayTransfers((prev) => [transfer, ...prev])
+      toast.success('Gateway settlement created')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to settle with Gateway')
+    } finally {
+      setIsGatewayLoading(false)
+    }
+  }
 
   const saveToken = () => {
     if (!authToken.trim()) {
@@ -253,6 +343,17 @@ export default function CirclePage() {
       providerId: paymentForm.providerId || 'gemini-flash',
       model: paymentForm.model || 'pay_per_call',
       description: paymentForm.description || 'Agent inference (x402)',
+    })
+  }
+
+  const handleFillGatewayDemo = () => {
+    setGatewayForm({
+      amount: gatewayForm.amount || '25',
+      sourceChain: 'Arc Testnet',
+      destinationChain: 'Arc Testnet',
+      fromWalletId: circleWallets[0]?.walletId || '',
+      toAddress: wallet?.address || '',
+      notes: gatewayForm.notes || 'Gateway settlement for agent execution',
     })
   }
 
@@ -545,6 +646,207 @@ export default function CirclePage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Circle Wallets */}
+          <div className="card-quantum p-6 mt-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <BadgeDollarSign className="w-5 h-5" />
+              Circle Wallets
+            </h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Create programmable wallets for agents and users. These wallets anchor Gateway
+              settlements and x402 payments on Arc.
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label className="text-sm text-muted-foreground">Wallet Type</label>
+                <select
+                  value={walletType}
+                  onChange={(e) => setWalletType(e.target.value as typeof walletType)}
+                  className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
+                >
+                  <option value="dev_controlled">Dev Controlled</option>
+                  <option value="user_controlled">User Controlled</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm text-muted-foreground">Label (optional)</label>
+                <input
+                  value={walletLabel}
+                  onChange={(e) => setWalletLabel(e.target.value)}
+                  placeholder="Treasury Ops Wallet"
+                  className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3 mb-6">
+              <button onClick={handleCreateWallet} className="btn-quantum" disabled={isWalletLoading}>
+                Create Wallet
+              </button>
+              <button onClick={refreshWallets} className="btn-quantum" disabled={isWalletLoading}>
+                Refresh
+              </button>
+            </div>
+
+            {isWalletLoading ? (
+              <p className="text-muted-foreground">Loading wallets...</p>
+            ) : circleWallets.length > 0 ? (
+              <div className="space-y-3">
+                {circleWallets.map((wallet) => (
+                  <div key={wallet.id} className="rounded-xl border border-white/10 bg-dark-100 p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-semibold">
+                          {wallet.metadata?.label || 'Circle Wallet'}
+                        </div>
+                        <div className="text-xs text-muted-foreground font-mono">
+                          {wallet.address}
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {wallet.type.replace('_', ' ')}
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      USDC: {wallet.metadata?.balances?.USDC || '0'} · ARC:{' '}
+                      {wallet.metadata?.balances?.ARC || '0'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No Circle wallets yet.</p>
+            )}
+          </div>
+
+          {/* Gateway Settlement */}
+          <div className="card-quantum p-6 mt-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Coins className="w-5 h-5" />
+              Gateway Settlement
+            </h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Move USDC using Circle Gateway for atomic settlement across Arc and other chains.
+            </p>
+
+            <div className="flex flex-wrap gap-3 mb-6">
+              <button onClick={handleFillGatewayDemo} className="btn-quantum inline-flex items-center gap-2">
+                <Wand2 className="w-4 h-4" />
+                Fill Demo Values
+              </button>
+              <button
+                onClick={handleGatewaySettlement}
+                className="btn-quantum inline-flex items-center gap-2"
+                disabled={isGatewayLoading}
+              >
+                <Play className="w-4 h-4" />
+                {isGatewayLoading ? 'Settling...' : 'Settle with Gateway'}
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="text-sm text-muted-foreground">Amount (USDC)</label>
+                <input
+                  value={gatewayForm.amount}
+                  onChange={(e) => setGatewayForm({ ...gatewayForm, amount: e.target.value })}
+                  placeholder="25"
+                  className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">From Wallet</label>
+                <select
+                  value={gatewayForm.fromWalletId}
+                  onChange={(e) => setGatewayForm({ ...gatewayForm, fromWalletId: e.target.value })}
+                  className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
+                >
+                  <option value="">Select wallet</option>
+                  {circleWallets.map((wallet) => (
+                    <option key={wallet.walletId} value={wallet.walletId}>
+                      {wallet.metadata?.label || wallet.walletId}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Source Chain</label>
+                <input
+                  value={gatewayForm.sourceChain}
+                  onChange={(e) => setGatewayForm({ ...gatewayForm, sourceChain: e.target.value })}
+                  placeholder="Arc Testnet"
+                  className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Destination Chain</label>
+                <input
+                  value={gatewayForm.destinationChain}
+                  onChange={(e) => setGatewayForm({ ...gatewayForm, destinationChain: e.target.value })}
+                  placeholder="Arc Testnet"
+                  className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Recipient Address</label>
+                <input
+                  value={gatewayForm.toAddress}
+                  onChange={(e) => setGatewayForm({ ...gatewayForm, toAddress: e.target.value })}
+                  placeholder="0xRecipient"
+                  className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm text-muted-foreground">Notes (optional)</label>
+                <input
+                  value={gatewayForm.notes}
+                  onChange={(e) => setGatewayForm({ ...gatewayForm, notes: e.target.value })}
+                  placeholder="Settlement notes"
+                  className="w-full px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {isGatewayLoading ? (
+              <p className="text-muted-foreground">Loading transfers...</p>
+            ) : gatewayTransfers.length > 0 ? (
+              <div className="space-y-3">
+                {gatewayTransfers.map((transfer) => (
+                  <div key={transfer.id} className="rounded-xl border border-white/10 bg-dark-100 p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-semibold">
+                          {transfer.amount} USDC · {transfer.status}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {transfer.sourceChain} → {transfer.destinationChain}
+                        </div>
+                      </div>
+                      {transfer.txHash && (
+                        <a
+                          href={`https://testnet.arcscan.io/tx/${transfer.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline"
+                        >
+                          View on ArcScan
+                        </a>
+                      )}
+                    </div>
+                    {transfer.toAddress && (
+                      <div className="mt-2 text-xs text-muted-foreground font-mono">
+                        To: {transfer.toAddress}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No Gateway settlements yet.</p>
+            )}
           </div>
 
           {/* Arc Infrastructure */}

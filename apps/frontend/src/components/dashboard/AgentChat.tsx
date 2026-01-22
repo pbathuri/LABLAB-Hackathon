@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send,
@@ -23,9 +23,22 @@ interface Message {
   timestamp: Date
 }
 
+export interface PromptInsights {
+  intent: string
+  confidence: number
+  risk: number
+  estimatedFee: number | null
+  impactPct: number | null
+  path: string
+  latency: number
+  token: string | null
+  amount: number
+}
+
 interface AgentChatProps {
   onMoodChange?: (mood: 'happy' | 'thinking' | 'alert') => void
   onSpeakingChange?: (speaking: boolean) => void
+  onInsightsChange?: (insights: PromptInsights | null) => void
 }
 
 export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
@@ -34,7 +47,8 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
     {
       id: '1',
       role: 'agent',
-      content: "I'm Captain Whiskers, your quantum-powered treasury agent. How can I assist you today?",
+      content:
+        "Hi! I'm Captain Whiskers — your friendly, quantum-powered treasury copilot. Tell me what you'd like to do, and I’ll surface clear, confident next steps.",
       timestamp: new Date(),
     },
   ])
@@ -52,7 +66,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max)
 
-  const getPromptInsights = (text: string) => {
+  const getPromptInsights = (text: string): PromptInsights => {
     const normalized = text.toLowerCase()
     const words = normalized.trim().split(/\s+/).filter(Boolean)
     const complexity = clamp(words.length / 18, 0, 1)
@@ -110,7 +124,15 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
     }
   }
 
-  const insights = getPromptInsights(input)
+  const insights = useMemo(() => getPromptInsights(input), [input, wallet?.balance])
+
+  useEffect(() => {
+    if (input.trim()) {
+      onInsightsChange?.(insights)
+    } else {
+      onInsightsChange?.(null)
+    }
+  }, [input, insights, onInsightsChange])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -148,7 +170,9 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'agent',
-        content: result.explanation || "I've processed your request. The transaction is being verified by our BFT consensus layer.",
+        content:
+          result.explanation ||
+          "Great request. I've queued it for BFT verification, and I’ll keep you posted as soon as it’s confirmed.",
         timestamp: new Date(),
       }
 
@@ -156,7 +180,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
       
       // If a decision was made, show success
       if (result.decisionId) {
-        toast.success('Transaction initiated! Waiting for BFT verification...')
+        toast.success('Awesome — your request is in motion. BFT verification is underway.')
       }
     } catch (error: any) {
       console.error('Agent request failed:', error)
@@ -165,7 +189,8 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'agent',
-        content: "I'm having trouble processing that request. Please try again or use the Send button for direct transactions.",
+        content:
+          "Thanks for your patience — I couldn't complete that yet. Try again, or use the Send button for a direct transfer.",
         timestamp: new Date(),
       }
       

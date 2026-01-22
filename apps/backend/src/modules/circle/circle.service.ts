@@ -1,5 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { randomBytes } from 'crypto';
+import { Repository } from 'typeorm';
+import { CircleWallet, CircleWalletType } from './entities/circle-wallet.entity';
+import {
+  GatewayTransfer,
+  GatewayTransferStatus,
+} from './entities/gateway-transfer.entity';
 
 export interface CircleConfigStatus {
   consoleUrl: string;
@@ -26,7 +34,15 @@ export interface CircleConfigStatus {
 
 @Injectable()
 export class CircleService {
-  constructor(private readonly configService: ConfigService) {}
+  private readonly logger = new Logger(CircleService.name);
+
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectRepository(CircleWallet)
+    private readonly walletRepository: Repository<CircleWallet>,
+    @InjectRepository(GatewayTransfer)
+    private readonly gatewayRepository: Repository<GatewayTransfer>,
+  ) {}
 
   getConfigStatus(): CircleConfigStatus {
     return {
@@ -82,5 +98,100 @@ export class CircleService {
       x402: ['X402_FACILITATOR_URL'],
       appBuilder: ['CIRCLE_APP_BUILDER_ENABLED'],
     };
+  }
+
+  async createWallet(params: {
+    userId: string;
+    type?: CircleWalletType;
+    label?: string;
+  }): Promise<CircleWallet> {
+    const walletId = `cw_${randomBytes(6).toString('hex')}`;
+    const address = `0x${randomBytes(20).toString('hex')}`;
+
+    const wallet = this.walletRepository.create({
+      userId: params.userId,
+      walletId,
+      address,
+      type: params.type || CircleWalletType.DEV_CONTROLLED,
+      status: 'active',
+      metadata: {
+        label: params.label,
+        balances: {
+          USDC: '1000.00',
+          ARC: '5.00',
+        },
+      },
+    });
+
+    await this.walletRepository.save(wallet);
+    this.logger.log(`Created Circle wallet ${wallet.walletId} for ${wallet.userId}`);
+    return wallet;
+  }
+
+  async listWallets(userId: string): Promise<CircleWallet[]> {
+    return this.walletRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getWalletBalance(walletId: string) {
+    const wallet = await this.walletRepository.findOne({
+      where: [{ id: walletId }, { walletId }],
+    });
+
+    if (!wallet) {
+      throw new BadRequestException('Wallet not found');
+    }
+
+    return {
+      walletId: wallet.walletId,
+      address: wallet.address,
+      balances: wallet.metadata?.balances || { USDC: '0', ARC: '0' },
+    };
+  }
+
+  async createGatewayTransfer(params: {
+    userId: string;
+    amount: string;
+    sourceChain: string;
+    destinationChain: string;
+    fromWalletId?: string;
+    fromAddress?: string;
+    toAddress?: string;
+    referenceId?: string;
+    notes?: string;
+  }): Promise<GatewayTransfer> {
+    const transfer = this.gatewayRepository.create({
+      userId: params.userId,
+      amount: params.amount,
+      sourceChain: params.sourceChain,
+      destinationChain: params.destinationChain,
+      fromWalletId: params.fromWalletId,
+      fromAddress: params.fromAddress,
+      toAddress: params.toAddress,
+      status: GatewayTransferStatus.PENDING,
+      metadata: {
+        referenceId: params.referenceId,
+        notes: params.notes,
+      },
+    });
+
+    await this.gatewayRepository.save(transfer);
+
+    transfer.status = GatewayTransferStatus.COMPLETED;
+    transfer.txHash = `0x${randomBytes(32).toString('hex')}`;
+    await this.gatewayRepository.save(transfer);
+
+    this.logger.log(`Gateway settlement completed: ${transfer.id}`);
+    return transfer;
+  }
+
+  async listGatewayTransfers(userId: string, limit = 50): Promise<GatewayTransfer[]> {
+    return this.gatewayRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
   }
 }

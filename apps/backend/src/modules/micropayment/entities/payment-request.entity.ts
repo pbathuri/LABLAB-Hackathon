@@ -77,6 +77,8 @@ export class PaymentRequest {
     description?: string;
     callResult?: any;
     errorMessage?: string;
+    gatewayTransferId?: string;
+    gatewayTxHash?: string;
   };
 
   @CreateDateColumn()

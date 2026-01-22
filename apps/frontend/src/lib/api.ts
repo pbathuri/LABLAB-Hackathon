@@ -33,6 +33,35 @@ export interface PortfolioAsset {
   color: string
 }
 
+export interface CircleWallet {
+  id: string
+  walletId: string
+  address: string
+  type: 'dev_controlled' | 'user_controlled'
+  status: string
+  metadata?: {
+    label?: string
+    balances?: {
+      USDC?: string
+      ARC?: string
+    }
+  }
+  createdAt: string
+}
+
+export interface GatewayTransfer {
+  id: string
+  sourceChain: string
+  destinationChain: string
+  amount: string
+  status: 'pending' | 'completed' | 'failed'
+  txHash?: string
+  fromWalletId?: string
+  fromAddress?: string
+  toAddress?: string
+  createdAt: string
+}
+
 class ApiService {
   private baseUrl: string
 
@@ -225,6 +254,43 @@ class ApiService {
     appBuilder: { enabled: boolean }
   }> {
     return this.request('/circle/config')
+  }
+
+  async createCircleWallet(params: { type?: 'dev_controlled' | 'user_controlled'; label?: string }) {
+    return this.request<CircleWallet>('/circle/wallets', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    })
+  }
+
+  async listCircleWallets() {
+    return this.request<CircleWallet[]>('/circle/wallets')
+  }
+
+  async getCircleWalletBalance(walletId: string) {
+    return this.request<{ walletId: string; address: string; balances: { USDC: string; ARC: string } }>(
+      `/circle/wallets/${walletId}/balance`,
+    )
+  }
+
+  async createGatewaySettlement(params: {
+    amount: string
+    sourceChain: string
+    destinationChain: string
+    fromWalletId?: string
+    fromAddress?: string
+    toAddress?: string
+    referenceId?: string
+    notes?: string
+  }) {
+    return this.request<GatewayTransfer>('/circle/gateway/settle', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    })
+  }
+
+  async listGatewayTransfers() {
+    return this.request<GatewayTransfer[]>('/circle/gateway/transfers')
   }
 
   // Micropayments (x402)
