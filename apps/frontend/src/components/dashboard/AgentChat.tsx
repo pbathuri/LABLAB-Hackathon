@@ -21,7 +21,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
     {
       id: '1',
       role: 'agent',
-      content: "Meow! 🐱 I'm Captain Whiskers, your quantum-powered treasury agent. How can I help you today?",
+      content: "I'm Captain Whiskers, your quantum-powered treasury agent. How can I assist you today?",
       timestamp: new Date(),
     },
   ])
@@ -55,11 +55,11 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
     // Simulate AI response
     setTimeout(() => {
       const responses = [
-        "Based on my quantum analysis, your portfolio is optimally diversified! The VQE circuit shows a Sharpe ratio of 1.42. 📊",
-        "I've verified this transaction through our BFT consensus layer. 7 out of 11 verifiers have signed! ✅",
-        "Meow! The current market conditions suggest maintaining your USDC allocation. Risk level: Low 🟢",
-        "I'm using CRYSTALS-Dilithium signatures for all your transactions. Quantum-safe security! 🔐",
-        "Your daily spending policy is set at $500 USDC. You've used $50 so far today. Want me to adjust the limit?",
+        "Based on my quantum analysis, your portfolio is optimally diversified. The VQE circuit shows a Sharpe ratio of 1.42.",
+        "I've verified this transaction through our BFT consensus layer. 7 out of 11 verifiers have signed.",
+        "Current market conditions suggest maintaining your USDC allocation. Risk level: Low.",
+        "I'm using CRYSTALS-Dilithium signatures for all your transactions. Quantum-safe security enabled.",
+        "Your daily spending policy is set at $500 USDC. You've used $50 so far today. Would you like me to adjust the limit?",
       ]
 
       const agentMessage: Message = {

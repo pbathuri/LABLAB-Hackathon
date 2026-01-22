@@ -95,14 +95,9 @@ export function VerificationStatus() {
       <div className="p-4 rounded-xl bg-dark-100/50">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm text-muted-foreground">Latest Verification</span>
-          <a 
-            href="https://testnet.arcscan.io/tx/0x..." 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-accent hover:underline"
-          >
-            View on ArcScan <ExternalLink className="w-3 h-3" />
-          </a>
+          <span className="text-xs text-muted-foreground">
+            Transaction hash will appear here
+          </span>
         </div>
         
         <div className="grid grid-cols-3 gap-4 text-sm">

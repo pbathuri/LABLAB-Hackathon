@@ -1,0 +1,96 @@
+'use client'
+
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { useAccount, useBalance, useChainId } from 'wagmi'
+import { api, WalletData } from '@/lib/api'
+
+interface WalletContextType {
+  wallet: WalletData | null
+  isLoading: boolean
+  error: string | null
+  refreshWallet: () => Promise<void>
+  disconnect: () => void
+}
+
+const WalletContext = createContext<WalletContextType | undefined>(undefined)
+
+export function WalletProvider({ children }: { children: ReactNode }) {
+  const { address, isConnected } = useAccount()
+  const chainId = useChainId()
+  const { data: balance } = useBalance({ address })
+  const [wallet, setWallet] = useState<WalletData | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const refreshWallet = async () => {
+    if (!address || !isConnected) {
+      setWallet(null)
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // If backend is available, fetch from API
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        const walletData = await api.getWallet(address)
+        setWallet(walletData)
+      } else {
+        // Fallback to wagmi data
+        setWallet({
+          address,
+          balance: {
+            USDC: '0',
+            ARC: balance?.formatted || '0',
+          },
+          network: chainId === 5042002 ? 'arc-testnet' : 'unknown',
+        })
+      }
+    } catch (err) {
+      console.error('Failed to fetch wallet:', err)
+      // Fallback to wagmi data on error
+      if (address && balance) {
+        setWallet({
+          address,
+          balance: {
+            USDC: '0',
+            ARC: balance.formatted || '0',
+          },
+          network: chainId === 5042002 ? 'arc-testnet' : 'unknown',
+        })
+      }
+      setError('Failed to load wallet data')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isConnected && address) {
+      refreshWallet()
+    } else {
+      setWallet(null)
+      setError(null)
+    }
+  }, [address, isConnected])
+
+  const disconnect = () => {
+    setWallet(null)
+    setError(null)
+  }
+
+  return (
+    <WalletContext.Provider value={{ wallet, isLoading, error, refreshWallet, disconnect }}>
+      {children}
+    </WalletContext.Provider>
+  )
+}
+
+export function useWallet() {
+  const context = useContext(WalletContext)
+  if (context === undefined) {
+    throw new Error('useWallet must be used within WalletProvider')
+  }
+  return context
+}

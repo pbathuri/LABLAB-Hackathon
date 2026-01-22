@@ -11,6 +11,7 @@ const nextConfig = {
         hostname: '**.arcscan.io',
       },
     ],
+    unoptimized: true, // For SVG support
   },
   
   // Environment variables exposed to the browser
@@ -58,12 +59,6 @@ const nextConfig = {
 
   // Webpack configuration
   webpack: (config, { isServer }) => {
-    // Handle SVG imports
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: ['@svgr/webpack'],
-    });
-
     // Fallbacks for browser environment
     if (!isServer) {
       config.resolve.fallback = {

@@ -24,8 +24,12 @@ export default function LandingPage() {
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-            <span className="text-xl">🐱</span>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center overflow-hidden p-1">
+            <img
+              src="/images/captain-whiskers-astronaut.svg"
+              alt="Captain Whiskers"
+              className="w-full h-full object-contain"
+            />
           </div>
           <span className="font-display text-xl font-bold gradient-text">
             Captain Whiskers

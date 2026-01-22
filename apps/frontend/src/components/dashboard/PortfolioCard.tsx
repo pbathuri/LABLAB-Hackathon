@@ -1,28 +1,38 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, PieChart } from 'lucide-react'
-
-interface Asset {
-  symbol: string
-  name: string
-  allocation: number
-  value: number
-  change24h: number
-  color: string
-}
-
-const mockAssets: Asset[] = [
-  { symbol: 'USDC', name: 'USD Coin', allocation: 40, value: 4980, change24h: 0, color: '#2775CA' },
-  { symbol: 'ETH', name: 'Ethereum', allocation: 30, value: 3735, change24h: 2.4, color: '#627EEA' },
-  { symbol: 'BTC', name: 'Bitcoin', allocation: 20, value: 2490, change24h: 1.8, color: '#F7931A' },
-  { symbol: 'ARC', name: 'Arc Token', allocation: 10, value: 1245, change24h: 5.2, color: '#14F5DD' },
-]
+import { TrendingUp, TrendingDown } from 'lucide-react'
+import { useWallet } from '@/contexts/WalletContext'
+import { useQuery } from '@tanstack/react-query'
+import { api, PortfolioAsset } from '@/lib/api'
+import { useState } from 'react'
 
 export function PortfolioCard() {
-  const totalValue = mockAssets.reduce((sum, asset) => sum + asset.value, 0)
-  const totalChange = mockAssets.reduce((sum, asset) => sum + (asset.value * asset.change24h / 100), 0)
-  const changePercent = (totalChange / totalValue) * 100
+  const { wallet } = useWallet()
+  const [isOptimizing, setIsOptimizing] = useState(false)
+  
+  const { data: assets = [], isLoading } = useQuery({
+    queryKey: ['portfolio', wallet?.address],
+    queryFn: () => wallet?.address ? api.getPortfolio(wallet.address) : Promise.resolve([]),
+    enabled: !!wallet?.address,
+  })
+
+  const totalValue = assets.reduce((sum, asset) => sum + asset.value, 0)
+  const totalChange = assets.reduce((sum, asset) => sum + (asset.value * asset.change24h / 100), 0)
+  const changePercent = totalValue > 0 ? (totalChange / totalValue) * 100 : 0
+
+  const handleOptimize = async () => {
+    if (!wallet?.address) return
+    setIsOptimizing(true)
+    try {
+      await api.optimizePortfolio(wallet.address)
+      // Refetch portfolio data
+    } catch (error) {
+      console.error('Optimization failed:', error)
+    } finally {
+      setIsOptimizing(false)
+    }
+  }
 
   return (
     <div className="card-quantum p-6">
@@ -31,43 +41,56 @@ export function PortfolioCard() {
           <h3 className="text-lg font-semibold mb-1">Portfolio Overview</h3>
           <p className="text-sm text-muted-foreground">Quantum-optimized allocation</p>
         </div>
-        <button className="px-4 py-2 text-sm rounded-xl border border-primary/30 hover:bg-primary/10 transition-colors">
-          Optimize
+        <button
+          onClick={handleOptimize}
+          disabled={isOptimizing || !wallet}
+          className="px-4 py-2 text-sm rounded-xl border border-primary/30 hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isOptimizing ? 'Optimizing...' : 'Optimize'}
         </button>
       </div>
 
-      {/* Total Value */}
-      <div className="flex items-end gap-4 mb-8">
-        <div className="text-4xl font-display font-bold">
-          ${totalValue.toLocaleString()}
+      {isLoading ? (
+        <div className="text-center py-12 text-muted-foreground">Loading portfolio...</div>
+      ) : assets.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground mb-2">No portfolio data</p>
+          <p className="text-sm text-muted-foreground">Connect your wallet to view your portfolio.</p>
         </div>
-        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-sm ${
-          changePercent >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-        }`}>
-          {changePercent >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-          {changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%
-        </div>
-      </div>
+      ) : (
+        <>
+          {/* Total Value */}
+          <div className="flex items-end gap-4 mb-8">
+            <div className="text-4xl font-display font-bold">
+              ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-sm ${
+              changePercent >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+            }`}>
+              {changePercent >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+              {changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%
+            </div>
+          </div>
 
-      {/* Allocation Chart (simplified bar) */}
-      <div className="mb-6">
-        <div className="flex rounded-xl overflow-hidden h-4">
-          {mockAssets.map((asset, index) => (
-            <motion.div
-              key={asset.symbol}
-              initial={{ width: 0 }}
-              animate={{ width: `${asset.allocation}%` }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              style={{ backgroundColor: asset.color }}
-              className="h-full"
-            />
-          ))}
-        </div>
-      </div>
+          {/* Allocation Chart */}
+          <div className="mb-6">
+            <div className="flex rounded-xl overflow-hidden h-4">
+              {assets.map((asset, index) => (
+                <motion.div
+                  key={asset.symbol}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${asset.allocation}%` }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  style={{ backgroundColor: asset.color }}
+                  className="h-full"
+                />
+              ))}
+            </div>
+          </div>
 
-      {/* Asset List */}
-      <div className="space-y-3">
-        {mockAssets.map((asset, index) => (
+          {/* Asset List */}
+          <div className="space-y-3">
+            {assets.map((asset, index) => (
           <motion.div
             key={asset.symbol}
             initial={{ opacity: 0, x: -20 }}
@@ -88,19 +111,21 @@ export function PortfolioCard() {
               </div>
             </div>
 
-            <div className="text-right">
-              <div className="font-mono">${asset.value.toLocaleString()}</div>
-              <div className={`text-xs ${asset.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {asset.change24h >= 0 ? '+' : ''}{asset.change24h}%
+              <div className="text-right">
+                <div className="font-mono">${asset.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className={`text-xs ${asset.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {asset.change24h >= 0 ? '+' : ''}{asset.change24h.toFixed(2)}%
+                </div>
               </div>
-            </div>
 
-            <div className="text-right w-16">
-              <div className="text-sm text-muted-foreground">{asset.allocation}%</div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+              <div className="text-right w-16">
+                <div className="text-sm text-muted-foreground">{asset.allocation.toFixed(1)}%</div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        </>
+      )}
     </div>
   )
 }

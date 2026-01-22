@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { mainnet } from 'wagmi/chains'
 import { useState, type ReactNode } from 'react'
+import { WalletProvider } from '@/contexts/WalletContext'
 
 // Define Arc testnet chain
 const arcTestnet = {
@@ -44,7 +45,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <WalletProvider>
+          {children}
+        </WalletProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )

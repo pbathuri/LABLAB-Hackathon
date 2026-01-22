@@ -9,6 +9,26 @@ import { VerificationStatus } from '@/components/dashboard/VerificationStatus'
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions'
 import { AgentChat } from '@/components/dashboard/AgentChat'
 import { QuantumInsights } from '@/components/dashboard/QuantumInsights'
+import { useWallet } from '@/contexts/WalletContext'
+
+function WalletBalance() {
+  const { wallet, isLoading } = useWallet()
+  
+  if (isLoading) {
+    return <div className="text-lg font-mono font-bold text-accent">Loading...</div>
+  }
+  
+  if (!wallet) {
+    return <div className="text-lg font-mono font-bold text-muted-foreground">Not connected</div>
+  }
+  
+  const usdcBalance = parseFloat(wallet.balance?.USDC || '0')
+  return (
+    <div className="text-lg font-mono font-bold text-accent">
+      ${usdcBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+    </div>
+  )
+}
 
 export default function DashboardPage() {
   const [agentMood, setAgentMood] = useState<'happy' | 'thinking' | 'alert'>('happy')
@@ -42,7 +62,7 @@ export default function DashboardPage() {
             {/* Balance */}
             <div className="px-4 py-2 rounded-xl glass">
               <span className="text-sm text-muted-foreground">Balance</span>
-              <div className="text-lg font-mono font-bold text-accent">$12,450.00 USDC</div>
+              <WalletBalance />
             </div>
           </div>
         </motion.div>

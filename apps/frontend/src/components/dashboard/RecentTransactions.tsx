@@ -2,71 +2,51 @@
 
 import { motion } from 'framer-motion'
 import { ArrowUpRight, ArrowDownLeft, ExternalLink, Repeat } from 'lucide-react'
-
-interface Transaction {
-  id: string
-  type: 'send' | 'receive' | 'swap'
-  amount: number
-  token: string
-  to?: string
-  from?: string
-  status: 'confirmed' | 'pending'
-  timestamp: string
-  txHash: string
-}
-
-const mockTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'send',
-    amount: 50,
-    token: 'USDC',
-    to: '0xabcd...1234',
-    status: 'confirmed',
-    timestamp: '5 min ago',
-    txHash: '0x123...',
-  },
-  {
-    id: '2',
-    type: 'swap',
-    amount: 100,
-    token: 'ETH → USDC',
-    status: 'confirmed',
-    timestamp: '1 hour ago',
-    txHash: '0x456...',
-  },
-  {
-    id: '3',
-    type: 'receive',
-    amount: 250,
-    token: 'USDC',
-    from: '0xefgh...5678',
-    status: 'confirmed',
-    timestamp: '3 hours ago',
-    txHash: '0x789...',
-  },
-  {
-    id: '4',
-    type: 'send',
-    amount: 15,
-    token: 'USDC',
-    to: '0xijkl...9012',
-    status: 'pending',
-    timestamp: '1 min ago',
-    txHash: '0xabc...',
-  },
-]
+import { useWallet } from '@/contexts/WalletContext'
+import { useQuery } from '@tanstack/react-query'
+import { api, Transaction } from '@/lib/api'
 
 export function RecentTransactions() {
+  const { wallet } = useWallet()
+  
+  const { data: transactions = [], isLoading } = useQuery({
+    queryKey: ['transactions', wallet?.address],
+    queryFn: () => wallet?.address ? api.getTransactions(wallet.address, 5) : Promise.resolve([]),
+    enabled: !!wallet?.address,
+  })
+  const formatAmount = (amount: string) => {
+    const num = parseFloat(amount)
+    return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  }
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins} min ago`
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+  }
+
   return (
     <div className="card-quantum p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold">Recent Transactions</h3>
-        <button className="text-xs text-accent hover:underline">View All</button>
+        <a href="/dashboard/history" className="text-xs text-accent hover:underline">View All</a>
       </div>
 
-      <div className="space-y-3">
-        {mockTransactions.map((tx, index) => (
+      {isLoading ? (
+        <div className="text-center py-8 text-muted-foreground text-sm">Loading transactions...</div>
+      ) : transactions.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground text-sm">No transactions yet</div>
+      ) : (
+        <div className="space-y-3">
+          {transactions.map((tx, index) => (
           <motion.div
             key={tx.id}
             initial={{ opacity: 0, y: 10 }}
@@ -93,9 +73,14 @@ export function RecentTransactions() {
                       Pending
                     </span>
                   )}
+                  {tx.status === 'failed' && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">
+                      Failed
+                    </span>
+                  )}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {tx.to ? `To: ${tx.to}` : tx.from ? `From: ${tx.from}` : tx.token}
+                <div className="text-xs text-muted-foreground font-mono">
+                  {tx.to ? `${tx.to.slice(0, 6)}...${tx.to.slice(-4)}` : tx.from ? `${tx.from.slice(0, 6)}...${tx.from.slice(-4)}` : tx.token}
                 </div>
               </div>
             </div>
@@ -104,23 +89,28 @@ export function RecentTransactions() {
               <div className={`font-mono ${
                 tx.type === 'receive' ? 'text-green-400' : ''
               }`}>
-                {tx.type === 'receive' ? '+' : '-'}${tx.amount}
+                {tx.type === 'receive' ? '+' : tx.type === 'send' ? '-' : ''}
+                {formatAmount(tx.amount)} {tx.token}
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <span>{tx.timestamp}</span>
-                <a 
-                  href={`https://testnet.arcscan.io/tx/${tx.txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <ExternalLink className="w-3 h-3 text-accent" />
-                </a>
+                <span>{formatTimestamp(tx.timestamp)}</span>
+                {tx.hash && (
+                  <a 
+                    href={`https://testnet.arcscan.io/tx/${tx.hash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ExternalLink className="w-3 h-3 text-accent" />
+                  </a>
+                )}
               </div>
             </div>
           </motion.div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

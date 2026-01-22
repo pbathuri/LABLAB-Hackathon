@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   LayoutDashboard,
@@ -16,6 +16,10 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
+import { useDisconnect } from 'wagmi'
+import { useWallet } from '@/contexts/WalletContext'
+import { NotificationsModal } from '@/components/modals/NotificationsModal'
+import { HelpModal } from '@/components/modals/HelpModal'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -33,7 +37,18 @@ const navItems = [
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const { disconnect: disconnectWallet } = useDisconnect()
+  const { wallet, disconnect: clearWallet } = useWallet()
+
+  const handleDisconnect = () => {
+    disconnectWallet()
+    clearWallet()
+    router.push('/')
+  }
 
   return (
     <div className="flex min-h-screen bg-dark">
@@ -46,8 +61,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
-              <span className="text-xl">🐱</span>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
+              <img
+                src="/images/captain-whiskers-astronaut.svg"
+                alt="Captain Whiskers"
+                className="w-full h-full object-contain"
+              />
             </div>
             {!collapsed && (
               <motion.span 
@@ -98,19 +117,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
           {/* User Section */}
           <div className="p-4 border-t border-white/10">
-            {!collapsed && (
+            {!collapsed && wallet && (
               <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-dark-100 mb-3">
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-sm">👤</span>
+                  <Wallet className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">0x1234...5678</div>
+                  <div className="text-sm font-medium truncate font-mono">
+                    {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
+                  </div>
                   <div className="text-xs text-muted-foreground">Connected</div>
                 </div>
               </div>
             )}
 
-            <button className="flex items-center gap-3 px-4 py-2 w-full rounded-xl text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors">
+            <button
+              onClick={handleDisconnect}
+              className="flex items-center gap-3 px-4 py-2 w-full rounded-xl text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+            >
               <LogOut className="w-5 h-5" />
               {!collapsed && <span>Disconnect</span>}
             </button>
@@ -154,7 +178,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* Actions */}
             <div className="flex items-center gap-4">
               {/* Notifications */}
-              <button className="relative p-2 rounded-xl hover:bg-white/5 transition-colors">
+              <button
+                onClick={() => setShowNotifications(true)}
+                className="relative p-2 rounded-xl hover:bg-white/5 transition-colors"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
@@ -162,7 +189,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </button>
 
               {/* Help */}
-              <button className="p-2 rounded-xl hover:bg-white/5 transition-colors">
+              <button
+                onClick={() => setShowHelp(true)}
+                className="p-2 rounded-xl hover:bg-white/5 transition-colors"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -174,6 +204,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Page Content */}
         {children}
       </main>
+
+      {/* Modals */}
+      <NotificationsModal isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
+      <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   )
 }
