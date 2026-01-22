@@ -23,6 +23,17 @@ interface Message {
   timestamp: Date
 }
 
+type DemoStepStatus = 'pending' | 'running' | 'done' | 'simulated' | 'error'
+
+interface DemoStep {
+  key: string
+  label: string
+  status: DemoStepStatus
+  detail?: string
+  startedAt?: string
+  endedAt?: string
+}
+
 export interface PromptInsights {
   intent: string
   confidence: number
@@ -56,6 +67,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
   const [isTyping, setIsTyping] = useState(false)
   const [isDemoRunning, setIsDemoRunning] = useState(false)
   const [runSeed, setRunSeed] = useState(0)
+  const [demoTimeline, setDemoTimeline] = useState<DemoStep[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const onInsightsChangeRef = useRef(onInsightsChange)
 
@@ -169,6 +181,35 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     return `${hash.slice(0, 10)}...${hash.slice(-6)}`
   }
 
+  const formatTime = (timestamp?: string) => {
+    if (!timestamp) return ''
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+  }
+
+  const setStepStatus = useCallback(
+    (key: string, status: DemoStepStatus, detail?: string) => {
+      const now = new Date().toISOString()
+      setDemoTimeline((prev) =>
+        prev.map((step) =>
+          step.key === key
+            ? {
+                ...step,
+                status,
+                detail: detail ?? step.detail,
+                startedAt: status === 'running' ? now : step.startedAt,
+                endedAt: ['done', 'simulated', 'error'].includes(status) ? now : step.endedAt,
+              }
+            : step,
+        ),
+      )
+    },
+    [],
+  )
+
   const extractPaymentId = (payload: any) =>
     payload?.id || payload?.requestId || payload?.data?.id || payload?.paymentId || null
 
@@ -178,6 +219,16 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     const authToken = api.getStoredAuthToken()
     const isSimulation = !authToken
 
+    const initialTimeline: DemoStep[] = [
+      { key: 'wallet', label: 'Circle wallet', status: 'pending' },
+      { key: 'gateway', label: 'Gateway settlement', status: 'pending' },
+      { key: 'x402-create', label: 'x402 create', status: 'pending' },
+      { key: 'x402-authorize', label: 'x402 authorize', status: 'pending' },
+      { key: 'x402-complete', label: 'x402 complete', status: 'pending' },
+      { key: 'agent', label: 'Agent decision + BFT', status: 'pending' },
+    ]
+
+    setDemoTimeline(initialTimeline)
     setIsDemoRunning(true)
     setIsTyping(true)
     onMoodChange?.('thinking')
@@ -187,7 +238,10 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
         : 'Starting full demo. I’ll chain Circle Wallets → Gateway settlement → x402 → Agent decision.',
     )
 
+    let activeStep = 'wallet'
+
     try {
+      setStepStatus('wallet', 'running')
       let circleWallet = {
         walletId: 'demo-wallet',
         address: wallet?.address || `0x${Math.random().toString(16).slice(2, 42)}`,
@@ -201,10 +255,17 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       }
 
       await delay(400)
+      setStepStatus(
+        'wallet',
+        isSimulation ? 'simulated' : 'done',
+        `Wallet ${circleWallet.address.slice(0, 6)}...${circleWallet.address.slice(-4)}`,
+      )
       addAgentMessage(
         `1) Circle wallet created: ${circleWallet.address.slice(0, 6)}...${circleWallet.address.slice(-4)}.`,
       )
 
+      activeStep = 'gateway'
+      setStepStatus('gateway', 'running')
       let gatewayTransfer: { amount: string; txHash?: string } = {
         amount: '25',
         txHash: createMockHash(),
@@ -222,12 +283,19 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       }
 
       await delay(400)
+      setStepStatus(
+        'gateway',
+        isSimulation ? 'simulated' : 'done',
+        `Tx ${shortenHash(gatewayTransfer.txHash)}`,
+      )
       addAgentMessage(
         `2) Gateway settlement completed: ${gatewayTransfer.amount} USDC · Tx ${shortenHash(
           gatewayTransfer.txHash,
         )}.`,
       )
 
+      activeStep = 'x402-create'
+      setStepStatus('x402-create', 'running')
       let paymentId = `pay_${Date.now()}`
       if (!isSimulation) {
         const payment = await api.createMicropayment({
@@ -242,23 +310,38 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       }
 
       await delay(400)
+      setStepStatus(
+        'x402-create',
+        isSimulation ? 'simulated' : 'done',
+        `Payment ${paymentId}`,
+      )
       addAgentMessage(`3) x402 payment created: ${paymentId}.`)
 
       if (!isSimulation) {
+        activeStep = 'x402-authorize'
+        setStepStatus('x402-authorize', 'running')
         await api.authorizeMicropayment(paymentId)
+        setStepStatus('x402-authorize', 'done')
         addAgentMessage('4) x402 authorized successfully.')
+        activeStep = 'x402-complete'
+        setStepStatus('x402-complete', 'running')
         await api.completeMicropayment(paymentId, { ok: true, demo: true })
+        setStepStatus('x402-complete', 'done')
         addAgentMessage('5) x402 completed with atomic settlement recorded.')
       } else {
         await delay(300)
+        setStepStatus('x402-authorize', 'simulated')
         addAgentMessage('4) x402 authorized successfully. (simulated)')
         await delay(300)
+        setStepStatus('x402-complete', 'simulated')
         addAgentMessage('5) x402 completed with atomic settlement recorded. (simulated)')
       }
 
       const decisionPrompt =
         'Optimize portfolio with low risk, keep 60% USDC, 30% ETH, 10% ARC, and verify via BFT.'
       const decisionStats = getPromptInsights(decisionPrompt)
+      activeStep = 'agent'
+      setStepStatus('agent', 'running')
       const decisionId = isSimulation
         ? `demo-decision-${Date.now()}`
         : (await api.makeAgentDecision({
@@ -267,6 +350,12 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
             marketData: {},
             riskTolerance: 0.4,
           })).decisionId
+
+      setStepStatus(
+        'agent',
+        isSimulation ? 'simulated' : 'done',
+        `Decision ${decisionId}`,
+      )
 
       addAgentMessage(
         `6) Agent decision queued: ${decisionId}. Confidence ${Math.round(
@@ -284,6 +373,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       onSpeakingChange?.(true)
       setTimeout(() => onSpeakingChange?.(false), 2000)
     } catch (error: any) {
+      setStepStatus(activeStep, 'error', error?.message || 'Failed')
       addAgentMessage(
         `Full demo paused: ${error?.message || 'Something went wrong.'} You can retry anytime.`,
       )
@@ -300,6 +390,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     onSpeakingChange,
     wallet?.address,
     wallet?.balance,
+    setStepStatus,
   ])
 
   useEffect(() => {
@@ -393,6 +484,28 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     }
   }
 
+  const timelinePill = (status: DemoStepStatus) => {
+    const styles: Record<DemoStepStatus, string> = {
+      pending: 'bg-white/5 text-muted-foreground',
+      running: 'bg-primary/20 text-primary animate-pulse',
+      done: 'bg-green-500/20 text-green-400',
+      simulated: 'bg-yellow-500/20 text-yellow-400',
+      error: 'bg-red-500/20 text-red-400',
+    }
+    const labelMap: Record<DemoStepStatus, string> = {
+      pending: 'Pending',
+      running: 'Running',
+      done: 'Done',
+      simulated: 'Simulated',
+      error: 'Error',
+    }
+    return (
+      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${styles[status]}`}>
+        {labelMap[status]}
+      </span>
+    )
+  }
+
   return (
     <div className="flex flex-col h-80">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-dark-100/60 px-4 py-3">
@@ -416,6 +529,47 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
           {isDemoRunning ? 'Running full demo...' : 'Run full demo'}
         </button>
       </div>
+
+      {demoTimeline.length > 0 && (
+        <div className="mb-4 card-quantum p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold">Full demo timeline</span>
+            <span className="text-xs text-muted-foreground">
+              {demoTimeline.some((step) => step.status === 'running')
+                ? 'In progress'
+                : demoTimeline.some((step) => step.status === 'error')
+                  ? 'Needs attention'
+                  : 'Complete'}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {demoTimeline.map((step, index) => (
+              <motion.div
+                key={step.key}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="flex items-center justify-between gap-3 rounded-xl bg-dark-100/70 border border-white/10 px-3 py-2"
+              >
+                <div>
+                  <div className="text-sm font-medium">
+                    {index + 1}. {step.label}
+                  </div>
+                  {step.detail && (
+                    <div className="text-xs text-muted-foreground">{step.detail}</div>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground">
+                    {formatTime(step.endedAt || step.startedAt)}
+                  </span>
+                  {timelinePill(step.status)}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
       {/* Prompt helpers */}
       {!input.trim() && (
         <div className="mb-4">
