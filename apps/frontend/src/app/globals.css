@@ -218,3 +218,315 @@
 .blink-animate {
   animation: blink 3s ease-in-out infinite;
 }
+
+/* ======================== */
+/* QUANTUM FINTECH THEME    */
+/* ======================== */
+
+/* Glass Card */
+.glass-card {
+  background: rgba(21, 28, 44, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 217, 255, 0.1);
+  box-shadow: 
+    0 8px 32px 0 rgba(0, 0, 0, 0.37),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Monospace for numbers/data */
+.mono {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Animation Keyframes */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-bottom {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Animation Utilities */
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-right {
+  animation: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-bottom {
+  animation: slide-in-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered list animations */
+.stagger-list > * {
+  opacity: 0;
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stagger-list > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-list > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-list > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-list > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-list > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-list > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-list > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-list > *:nth-child(8) { animation-delay: 350ms; }
+
+/* Chart line animation */
+.chart-line-animated {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw-line 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes draw-line {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Value flash animations */
+@keyframes flash-green {
+  0% { background-color: rgba(0, 255, 148, 0.3); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flash-red {
+  0% { background-color: rgba(255, 71, 87, 0.3); }
+  100% { background-color: transparent; }
+}
+
+.flash-up { animation: flash-green 0.6s ease-out; }
+.flash-down { animation: flash-red 0.6s ease-out; }
+
+/* Tap/Press feedback */
+.tap-highlight {
+  -webkit-tap-highlight-color: rgba(0, 217, 255, 0.2);
+  touch-action: manipulation;
+}
+
+.tap-highlight:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* Safe area padding */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* Touch-friendly sizes */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Price indicators */
+.price-up {
+  color: #00FF94;
+}
+.price-up::before {
+  content: '▲ ';
+  font-size: 0.75em;
+}
+
+.price-down {
+  color: #FF4757;
+}
+.price-down::before {
+  content: '▼ ';
+  font-size: 0.75em;
+}
+
+/* Allocation bar */
+.allocation-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: #151C2C;
+  overflow: hidden;
+}
+
+.allocation-bar > div {
+  height: 100%;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Percentage change badge */
+.percentage-change {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.percentage-change.positive {
+  background: rgba(0, 255, 148, 0.1);
+  color: #00FF94;
+}
+
+.percentage-change.negative {
+  background: rgba(255, 71, 87, 0.1);
+  color: #FF4757;
+}
+
+/* Status dot */
+.status-dot {
+  position: relative;
+}
+
+.status-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.status-dot.online::after {
+  background-color: #00FF94;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Card hover effects */
+.card-hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 217, 255, 0.2);
+}
+
+.card-hover-glow:hover {
+  border-color: rgba(0, 217, 255, 0.5);
+  box-shadow: 0 0 30px rgba(0, 217, 255, 0.2);
+}
+
+/* List item interactive */
+.list-item-interactive {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.list-item-interactive:hover {
+  background: rgba(0, 217, 255, 0.05);
+  transform: translateX(4px);
+}
+
+.list-item-interactive:active {
+  transform: scale(0.99);
+}
+
+/* Quick action button */
+.quick-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #151C2C;
+  border: 1px solid rgba(0, 217, 255, 0.1);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.quick-action:hover {
+  border-color: rgba(0, 217, 255, 0.3);
+  background: rgba(0, 217, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.quick-action:active {
+  transform: scale(0.95);
+}
+
+/* Sparkline container */
+.sparkline-container {
+  height: 40px;
+  overflow: hidden;
+}
+
+.sparkline-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Divider with glow */
+.divider-glow {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 217, 255, 0.3),
+    transparent
+  );
+}
+
+/* Refresh spinner */
+.spin-refresh {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Count animation */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-count {
+  animation: count-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Backdrop animation */
+@keyframes fade-backdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-backdrop {
+  animation: fade-backdrop 0.2s ease-out forwards;
+}
