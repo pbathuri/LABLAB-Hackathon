@@ -72,6 +72,12 @@ Built for the **Arc × Circle Hackathon** — A next-generation autonomous comme
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+## 📚 Documentation
+
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Quick deployment guide (Vercel + Railway)
+- **[HOSTING_GUIDE.md](./HOSTING_GUIDE.md)** - Comprehensive hosting documentation
+- **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Testing instructions
+
 ## 🚀 Quick Start
 
 ### Prerequisites

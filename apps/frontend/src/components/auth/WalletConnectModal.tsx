@@ -3,15 +3,16 @@
 import { useState } from 'react';
 import { X, Wallet, CheckCircle, Loader2, ExternalLink, Copy, Shield, Sparkles } from 'lucide-react';
 
-interface WalletConnectModalProps {
-  onClose: () => void;
-  onConnect?: () => void;
-}
-
 interface WalletInfo {
   name: string;
   address: string;
   balance: string;
+}
+
+interface WalletConnectModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConnect: (wallet: WalletInfo) => void;
 }
 
 const wallets = [
@@ -52,7 +53,8 @@ const wallets = [
   },
 ];
 
-export function WalletConnectModal({ onClose, onConnect }: WalletConnectModalProps) {
+export function WalletConnectModal({ isOpen, onClose, onConnect }: WalletConnectModalProps) {
+  if (!isOpen) return null;
   const [connecting, setConnecting] = useState<string | null>(null);
   const [connected, setConnected] = useState<WalletInfo | null>(null);
   const [copied, setCopied] = useState(false);
@@ -74,10 +76,10 @@ export function WalletConnectModal({ onClose, onConnect }: WalletConnectModalPro
   };
 
   const handleConfirm = () => {
-    if (connected && onConnect) {
-      onConnect();
+    if (connected) {
+      onConnect(connected);
+      onClose();
     }
-    onClose();
   };
 
   const copyAddress = () => {

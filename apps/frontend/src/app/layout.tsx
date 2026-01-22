@@ -17,6 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 const orbitronVariable = '--font-orbitron'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://captain-whiskers.vercel.app'),
   title: 'Captain Whiskers | Trustless AI Treasury',
   description: 'Quantum-aware AI agent for autonomous commerce with Byzantine fault tolerance',
   keywords: ['AI agent', 'quantum computing', 'cryptocurrency', 'DeFi', 'USDC', 'Arc blockchain'],
@@ -25,6 +26,12 @@ export const metadata: Metadata = {
     title: 'Captain Whiskers | Trustless AI Treasury',
     description: 'The future of autonomous AI commerce',
     type: 'website',
+    images: ['/og-image.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Captain Whiskers | Trustless AI Treasury',
+    description: 'Quantum-aware AI agent for autonomous commerce',
   },
 }
 

@@ -55,3 +55,6 @@ typechain-types
 # Misc
 *.log
 .cache
+logs/
+*.pid
+*.backup
