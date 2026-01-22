@@ -292,7 +292,15 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       setIsTyping(false)
       setIsDemoRunning(false)
     }
-  }, [addAgentMessage, getPromptInsights, isDemoRunning, onMoodChange, onSpeakingChange, wallet?.balance])
+  }, [
+    addAgentMessage,
+    getPromptInsights,
+    isDemoRunning,
+    onMoodChange,
+    onSpeakingChange,
+    wallet?.address,
+    wallet?.balance,
+  ])
 
   useEffect(() => {
     if (runSeed === 0) return
