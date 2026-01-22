@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { motion } from 'framer-motion'
 import { Shield, CheckCircle2, Clock, RefreshCw, Loader2, ExternalLink, AlertTriangle } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { api } from '@/lib/api'
 import { useWallet } from '@/contexts/WalletContext'
 
@@ -14,7 +15,8 @@ export default function VerificationPage() {
     const { data: verifierStatus, isLoading, refetch } = useQuery({
         queryKey: ['verifier-status'],
         queryFn: () => api.getVerifierStatus(),
-        refetchInterval: 10000, // Refresh every 10 seconds
+        refetchInterval: 30000, // Refresh every 30 seconds (reduced frequency)
+        staleTime: 25000,
     })
 
     // Fetch recent verifications
@@ -22,7 +24,8 @@ export default function VerificationPage() {
         queryKey: ['recent-verifications'],
         queryFn: () => api.getRecentVerifications(5),
         enabled: isAuthenticated,
-        refetchInterval: 15000,
+        refetchInterval: 30000, // Reduced frequency
+        staleTime: 25000,
     })
 
     const totalNodes = verifierStatus?.totalNodes || 11
@@ -30,16 +33,31 @@ export default function VerificationPage() {
     const requiredSignatures = verifierStatus?.requiredSignatures || 7
     const faultTolerance = verifierStatus?.faultTolerance || 3
 
-    // Simulate signatures for visualization (in production this would come from real verification logs)
-    const signedCount = Math.min(activeNodes, Math.floor(Math.random() * 3) + 8)
+    // Use stable signature count (memoized to prevent re-renders)
+    const signedCount = useMemo(() => {
+        // Use data from API if available, otherwise use stable fallback
+        if (verifierStatus?.signedCount !== undefined) {
+            return verifierStatus.signedCount
+        }
+        // Stable default: 9 signatures (consensus reached)
+        return 9
+    }, [verifierStatus?.signedCount])
+    
     const consensusReached = signedCount >= requiredSignatures
 
-    const verifiers = verifierStatus?.nodes || Array.from({ length: 11 }, (_, i) => ({
-        id: `verifier-${i + 1}`,
-        address: `0x${Math.random().toString(16).slice(2, 42)}`,
-        reliability: 0.9 + Math.random() * 0.1,
-        avgLatencyMs: 30 + Math.random() * 50,
-    }))
+    // Memoize verifiers to prevent re-generation on each render
+    const verifiers = useMemo(() => {
+        if (verifierStatus?.nodes) {
+            return verifierStatus.nodes
+        }
+        // Generate stable mock data only once
+        return Array.from({ length: 11 }, (_, i) => ({
+            id: `verifier-${i + 1}`,
+            address: `0x${(i + 1).toString(16).padStart(4, '0')}...${(0xABCD + i).toString(16)}`,
+            reliability: 0.95 + (i % 5) * 0.01,
+            avgLatencyMs: 35 + (i * 3),
+        }))
+    }, [verifierStatus?.nodes])
 
     return (
         <DashboardLayout>

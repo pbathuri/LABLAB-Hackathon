@@ -82,7 +82,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         if (isMounted) {
           setBftStatus({
             nodes: status.activeNodes || 11,
-            signatures: Math.floor(Math.random() * 3) + 8, // Simulate
+            signatures: status.signedCount || 9, // Use API data or stable fallback
           })
         }
       } catch {

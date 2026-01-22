@@ -536,23 +536,32 @@ class ApiService {
     activeNodes: number
     faultTolerance: number
     requiredSignatures: number
+    signedCount: number
     nodes: Array<{ id: string; address: string; reliability: number; avgLatencyMs: number }>
   }> {
     try {
       return await this.request('/verification/stats')
     } catch {
-      // Return mock data for demo
+      // Return stable mock data for demo (no Math.random to prevent re-renders)
       return {
         totalNodes: 11,
         activeNodes: 11,
         faultTolerance: 3,
         requiredSignatures: 7,
-        nodes: Array.from({ length: 11 }, (_, i) => ({
-          id: `verifier-${i + 1}`,
-          address: `0x${Math.random().toString(16).slice(2, 42)}`,
-          reliability: 0.9 + Math.random() * 0.1,
-          avgLatencyMs: 30 + Math.random() * 50,
-        })),
+        signedCount: 9, // Stable: consensus reached
+        nodes: [
+          { id: 'verifier-1', address: '0x49f1a2b3c4d5e6f7...2e1e', reliability: 0.98, avgLatencyMs: 35 },
+          { id: 'verifier-2', address: '0x73a2b4c5d6e7f8a9...5e88', reliability: 0.97, avgLatencyMs: 42 },
+          { id: 'verifier-3', address: '0x2842c3d4e5f6a7b8...bc58', reliability: 0.96, avgLatencyMs: 38 },
+          { id: 'verifier-4', address: '0xfe1a3b4c5d6e7f80...5088', reliability: 0.99, avgLatencyMs: 31 },
+          { id: 'verifier-5', address: '0x80ce4d5e6f7a8b9c...c328', reliability: 0.95, avgLatencyMs: 45 },
+          { id: 'verifier-6', address: '0xdb885e6f7a8b9c0d...48d8', reliability: 0.94, avgLatencyMs: 52 },
+          { id: 'verifier-7', address: '0x54106f7a8b9c0d1e...42c7', reliability: 0.97, avgLatencyMs: 39 },
+          { id: 'verifier-8', address: '0x6222708a9b0c1d2e...4adf', reliability: 0.96, avgLatencyMs: 44 },
+          { id: 'verifier-9', address: '0xa6408a9b0c1d2e3f...9b38', reliability: 0.98, avgLatencyMs: 36 },
+          { id: 'verifier-10', address: '0x38b89b0c1d2e3f4a...4dd8', reliability: 0.93, avgLatencyMs: 48 },
+          { id: 'verifier-11', address: '0xdc0a0c1d2e3f4a5b...9812', reliability: 0.92, avgLatencyMs: 55 },
+        ],
       }
     }
   }
