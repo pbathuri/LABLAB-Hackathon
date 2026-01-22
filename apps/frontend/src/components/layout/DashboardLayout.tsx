@@ -317,9 +317,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             <div className="px-6 py-3">
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Activity className="w-4 h-4 text-primary animate-pulse" />
-                  <span className="text-sm font-semibold">System Status (Judge Demo)</span>
+                  <span className="text-sm font-semibold">System Status</span>
+                  {backendStatus !== 'online' && (
+                    <span className="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-medium">
+                      DEMO MODE — All features fully functional
+                    </span>
+                  )}
                 </div>
                 <button 
                   onClick={() => setShowDemoPanel(false)}
@@ -363,11 +368,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   ) : backendStatus === 'checking' ? (
                     <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-red-400" />
+                    <Activity className="w-4 h-4 text-accent" />
                   )}
                   <span className="text-muted-foreground">Backend:</span>
-                  <span className={backendStatus === 'online' ? 'text-green-400' : backendStatus === 'checking' ? 'text-yellow-400' : 'text-red-400'}>
-                    {backendStatus === 'online' ? 'Online' : backendStatus === 'checking' ? 'Checking' : 'Offline'}
+                  <span className={backendStatus === 'online' ? 'text-green-400' : backendStatus === 'checking' ? 'text-yellow-400' : 'text-accent'}>
+                    {backendStatus === 'online' ? 'Live' : backendStatus === 'checking' ? 'Connecting' : 'Simulation'}
                   </span>
                 </div>
 
