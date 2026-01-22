@@ -99,6 +99,53 @@ export default function DocsPage() {
               <li>We plan for PQ-safe ZK systems (STARK/SNARG) over elliptic-curve SNARKs.</li>
             </ul>
           </div>
+
+          <div className="mt-8 card-quantum p-8">
+            <h2 className="text-2xl font-semibold mb-4">Arc Infrastructure Resources</h2>
+            <p className="text-muted-foreground mb-4">
+              Arc is an EVM-compatible Layer-1 designed for programmable money with USDC gas,
+              deterministic finality, and BFT consensus. We use these resources to improve
+              reliability, indexing, and access to Arc data.
+            </p>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Node Providers</h3>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                  <li>Alchemy</li>
+                  <li>Blockdaemon</li>
+                  <li>dRPC</li>
+                  <li>QuickNode</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Data Indexers</h3>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                  <li>Envio (HyperIndex)</li>
+                  <li>Goldsky (Subgraphs + Mirror)</li>
+                  <li>The Graph</li>
+                  <li>Thirdweb Insight</li>
+                </ul>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-4 mt-6">
+              <a
+                href="https://docs.arc.network/llms.txt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline"
+              >
+                Arc Docs &amp; Resources
+              </a>
+              <a
+                href="https://faucet.circle.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline"
+              >
+                Circle Faucet (USDC testnet)
+              </a>
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>

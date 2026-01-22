@@ -4,6 +4,7 @@ This document summarizes Circle’s capabilities relevant to the Arc x Circle ha
 and maps them to concrete integration points in Captain Whiskers.
 
 ## Primary Sources
+- Arc resources: file://Resources-20260121200909.pdf
 - Circle Developer Docs (Gateway unified balance quickstart): https://developers.circle.com/gateway/quickstarts/unified-balance-evm
 - Circle Developer Docs (Bridge Kit): https://developers.circle.com/bridge-kit
 - Circle Developer Docs (Developer-controlled wallets): https://developers.circle.com/wallets/dev-controlled/create-your-first-wallet
@@ -11,6 +12,18 @@ and maps them to concrete integration points in Captain Whiskers.
 - Circle Blog (Preparing Blockchains for Q‑Day): https://www.circle.com/blog/preparing-blockchains-for-q-day
 
 ## Capabilities (from sources)
+
+### Arc (Settlement Layer + Infrastructure)
+Arc is an EVM‑compatible Layer‑1 designed for programmable money and real‑world economic
+activity, with **USDC as gas**, predictable stablecoin fees, deterministic finality, and a
+Malachite BFT consensus engine. Arc provides open access for developers while keeping
+validator participation permissioned for security and compliance.  
+Resource: file://Resources-20260121200909.pdf
+
+Arc resources include:
+- **Node providers**: Alchemy, Blockdaemon, dRPC, QuickNode  
+- **Data indexers**: Envio (HyperIndex), Goldsky (Subgraphs + Mirror), The Graph, Thirdweb  
+Resource: file://Resources-20260121200909.pdf
 
 ### Gateway (Unified USDC Balance)
 Circle Gateway enables a **unified, chain‑abstracted USDC balance** across multiple chains.
@@ -129,6 +142,7 @@ trackable in the verification layer.
   - ZK roadmap (STARK/SNARG migration)
 
 ## Immediate Project Actions (Recommended)
+0. **Arc RPC + indexing**: choose a node provider and indexer for Arc data reliability.
 1. **Circle Wallets integration**: Implement wallet set + wallet creation endpoints in
    `apps/backend/src/modules/circle/`.
 2. **Gateway client**: Add a Gateway service + endpoints, and wire unified balance into

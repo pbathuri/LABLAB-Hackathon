@@ -351,6 +351,56 @@ export default function CirclePage() {
               </div>
             )}
           </div>
+
+          {/* Arc Infrastructure */}
+          <div className="card-quantum p-6 mt-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Coins className="w-5 h-5" />
+              Arc Infrastructure & Resources
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Arc is the settlement layer for Captain Whiskers. Use these providers and indexers
+              for reliable RPC access, onchain data, and observability.
+            </p>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Node Providers</h3>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>Alchemy</li>
+                  <li>Blockdaemon</li>
+                  <li>dRPC</li>
+                  <li>QuickNode</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Data Indexers</h3>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>Envio (HyperIndex)</li>
+                  <li>Goldsky (Subgraphs + Mirror)</li>
+                  <li>The Graph</li>
+                  <li>Thirdweb Insight</li>
+                </ul>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-4 mt-4">
+              <a
+                href="https://docs.arc.network/llms.txt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline"
+              >
+                Arc Docs & Resources
+              </a>
+              <a
+                href="https://faucet.circle.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline"
+              >
+                Circle Faucet (USDC testnet)
+              </a>
+            </div>
+          </div>
         </motion.div>
       </div>
     </DashboardLayout>
