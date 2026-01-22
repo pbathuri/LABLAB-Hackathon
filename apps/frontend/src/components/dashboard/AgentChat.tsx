@@ -172,7 +172,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
   const extractPaymentId = (payload: any) =>
     payload?.id || payload?.requestId || payload?.data?.id || payload?.paymentId || null
 
-  const runFullDemo = async () => {
+  const runFullDemo = useCallback(async () => {
     if (isDemoRunning) return
 
     const authToken = api.getStoredAuthToken()
@@ -292,7 +292,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       setIsTyping(false)
       setIsDemoRunning(false)
     }
-  }
+  }, [addAgentMessage, getPromptInsights, isDemoRunning, onMoodChange, onSpeakingChange, wallet?.balance])
 
   useEffect(() => {
     if (runSeed === 0) return
@@ -300,7 +300,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       await runFullDemo()
     }
     start()
-  }, [runSeed])
+  }, [runSeed, runFullDemo])
 
   const handleSend = async () => {
     if (!input.trim() || isDemoRunning) return
