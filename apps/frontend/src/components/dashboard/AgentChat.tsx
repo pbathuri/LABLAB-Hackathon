@@ -396,6 +396,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     addAgentMessage,
     getPromptInsights,
     isDemoRunning,
+    isAuthenticated,
     onMoodChange,
     onSpeakingChange,
     wallet?.address,

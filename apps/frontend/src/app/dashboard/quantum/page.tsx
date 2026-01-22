@@ -200,7 +200,7 @@ export default function QuantumPage() {
               Preparing for Q-Day
             </h2>
             <p className="text-sm text-muted-foreground">
-              We align with Circle's post-quantum roadmap and research on upgrading consensus,
+              We align with Circle&apos;s post-quantum roadmap and research on upgrading consensus,
               signatures, and zero-knowledge systems. Captain Whiskers uses CRYSTALS-Dilithium
               for quantum-resistant signatures.
             </p>
