@@ -25,7 +25,7 @@ export default function DocsPage() {
             Documentation
           </h1>
           <p className="text-xl text-muted-foreground mb-12">
-            Learn about Captain Whiskers' features and architecture
+            Learn about Captain Whiskers&apos; features and architecture
           </p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
 import { useAccount, useBalance, useChainId, useConnect, useDisconnect } from 'wagmi'
 import { toast } from 'react-hot-toast'
 import { api, WalletData } from '@/lib/api'
@@ -28,7 +28,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const refreshWallet = async () => {
+  const refreshWallet = useCallback(async () => {
     if (!address || !isConnected) {
       setWallet(null)
       return
@@ -70,7 +70,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [address, balance, chainId, isConnected])
 
   useEffect(() => {
     if (isConnected && address) {
@@ -79,7 +79,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setWallet(null)
       setError(null)
     }
-  }, [address, isConnected])
+  }, [address, isConnected, refreshWallet])
 
   useEffect(() => {
     if (connectError) {

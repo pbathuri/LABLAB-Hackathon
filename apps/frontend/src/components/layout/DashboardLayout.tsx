@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -61,10 +62,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Logo */}
           <div className="p-6 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
-              <img
+              <Image
                 src="/images/captain-whiskers-astronaut.svg"
                 alt="Captain Whiskers"
+                width={40}
+                height={40}
                 className="w-full h-full object-contain"
+                priority
               />
             </div>
             {!collapsed && (

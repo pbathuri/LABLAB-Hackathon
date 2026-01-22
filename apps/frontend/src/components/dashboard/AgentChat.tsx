@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useRef, useEffect } from 'react'
+import { useCallback, useMemo, useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send,
@@ -66,7 +66,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max)
 
-  const getPromptInsights = (text: string): PromptInsights => {
+  const getPromptInsights = useCallback((text: string): PromptInsights => {
     const normalized = text.toLowerCase()
     const words = normalized.trim().split(/\s+/).filter(Boolean)
     const complexity = clamp(words.length / 18, 0, 1)
@@ -122,17 +122,23 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
       token,
       amount,
     }
-  }
+  }, [wallet?.balance])
 
-  const insights = useMemo(() => getPromptInsights(input), [input, wallet?.balance])
+  const insights = useMemo(() => getPromptInsights(input), [input, getPromptInsights])
+  const handleInsightsChange = useCallback(
+    (value: PromptInsights | null) => {
+      onInsightsChange?.(value)
+    },
+    [onInsightsChange],
+  )
 
   useEffect(() => {
     if (input.trim()) {
-      onInsightsChange?.(insights)
+      handleInsightsChange(insights)
     } else {
-      onInsightsChange?.(null)
+      handleInsightsChange(null)
     }
-  }, [input, insights, onInsightsChange])
+  }, [input, insights, handleInsightsChange])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

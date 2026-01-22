@@ -54,10 +54,11 @@ const wallets = [
 ];
 
 export function WalletConnectModal({ isOpen, onClose, onConnect }: WalletConnectModalProps) {
-  if (!isOpen) return null;
   const [connecting, setConnecting] = useState<string | null>(null);
   const [connected, setConnected] = useState<WalletInfo | null>(null);
   const [copied, setCopied] = useState(false);
+
+  if (!isOpen) return null;
 
   const handleConnect = async (walletId: string) => {
     setConnecting(walletId);
