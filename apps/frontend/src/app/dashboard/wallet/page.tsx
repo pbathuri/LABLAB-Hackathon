@@ -9,7 +9,7 @@ import { useState } from 'react'
 import { SendTransactionModal } from '@/components/transactions/SendTransactionModal'
 
 export default function WalletPage() {
-  const { wallet, isLoading, refreshWallet } = useWallet()
+  const { wallet, isLoading, refreshWallet, connect, isConnected, isConnecting } = useWallet()
   const { address } = useAccount()
   const [copied, setCopied] = useState(false)
   const [isSendModalOpen, setIsSendModalOpen] = useState(false)
@@ -42,6 +42,13 @@ export default function WalletPage() {
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">No wallet connected</p>
               <p className="text-sm text-muted-foreground">Please connect your wallet to view wallet information.</p>
+              <button
+                onClick={connect}
+                disabled={isConnecting}
+                className="mt-6 btn-quantum disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -103,13 +110,19 @@ export default function WalletPage() {
               <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
               <div className="space-y-3">
                 <button
-                  onClick={() => setIsSendModalOpen(true)}
-                  disabled={!wallet && !address}
+                  onClick={() => {
+                    if (!isConnected) {
+                      connect()
+                      return
+                    }
+                    setIsSendModalOpen(true)
+                  }}
+                  disabled={isConnecting}
                   className="w-full flex items-center justify-between p-4 rounded-xl bg-dark-100 hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center gap-3">
                     <ArrowUpRight className="w-5 h-5 text-primary" />
-                    <span>Send</span>
+                    <span>{isConnected ? 'Send' : 'Connect to Send'}</span>
                   </div>
                 </button>
                 <button
@@ -119,14 +132,16 @@ export default function WalletPage() {
                       navigator.clipboard.writeText(addressToCopy)
                       setCopied(true)
                       setTimeout(() => setCopied(false), 2000)
+                    } else {
+                      connect()
                     }
                   }}
-                  disabled={!wallet && !address}
+                  disabled={isConnecting}
                   className="w-full flex items-center justify-between p-4 rounded-xl bg-dark-100 hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center gap-3">
                     <ArrowDownLeft className="w-5 h-5 text-accent" />
-                    <span>Receive</span>
+                    <span>{wallet || address ? 'Receive' : 'Connect to Receive'}</span>
                   </div>
                 </button>
               </div>

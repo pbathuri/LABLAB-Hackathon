@@ -2,8 +2,10 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http } from 'wagmi'
+import { injected } from 'wagmi/connectors'
 import { mainnet } from 'wagmi/chains'
 import { useState, type ReactNode } from 'react'
+import { Toaster } from 'react-hot-toast'
 import { WalletProvider } from '@/contexts/WalletContext'
 
 // Define Arc testnet chain
@@ -27,6 +29,7 @@ const arcTestnet = {
 // Wagmi config
 const config = createConfig({
   chains: [arcTestnet, mainnet],
+  connectors: [injected()],
   transports: {
     [arcTestnet.id]: http(),
     [mainnet.id]: http(),
@@ -47,6 +50,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <WalletProvider>
           {children}
+          <Toaster />
         </WalletProvider>
       </QueryClientProvider>
     </WagmiProvider>

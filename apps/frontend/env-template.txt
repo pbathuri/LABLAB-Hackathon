@@ -20,6 +20,7 @@ NEXT_PUBLIC_TREASURY_CONTRACT=0xYourTreasuryContractAddress
 NEXT_PUBLIC_BFT_CONTRACT=0xYourBFTContractAddress
 NEXT_PUBLIC_ESCROW_CONTRACT=0xYourEscrowContractAddress
 NEXT_PUBLIC_USDC_CONTRACT=0xYourUSDCContractAddress
+NEXT_PUBLIC_USDC_DECIMALS=6
 
 # ===========================================
 # WALLET CONNECT (Optional)

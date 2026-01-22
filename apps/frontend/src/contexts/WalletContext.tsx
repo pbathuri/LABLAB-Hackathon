@@ -1,14 +1,18 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { useAccount, useBalance, useChainId } from 'wagmi'
+import { useAccount, useBalance, useChainId, useConnect, useDisconnect } from 'wagmi'
+import { toast } from 'react-hot-toast'
 import { api, WalletData } from '@/lib/api'
 
 interface WalletContextType {
   wallet: WalletData | null
   isLoading: boolean
   error: string | null
+  isConnected: boolean
+  isConnecting: boolean
   refreshWallet: () => Promise<void>
+  connect: () => void
   disconnect: () => void
 }
 
@@ -16,6 +20,8 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined)
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const { address, isConnected } = useAccount()
+  const { connect, connectors, isPending, error: connectError } = useConnect()
+  const { disconnect: wagmiDisconnect } = useDisconnect()
   const chainId = useChainId()
   const { data: balance } = useBalance({ address })
   const [wallet, setWallet] = useState<WalletData | null>(null)
@@ -75,13 +81,29 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [address, isConnected])
 
-  const disconnect = () => {
+  useEffect(() => {
+    if (connectError) {
+      toast.error(connectError.message || 'Failed to connect wallet')
+    }
+  }, [connectError])
+
+  const connectWallet = () => {
+    const injectedConnector = connectors.find((connector) => connector.id === 'injected') || connectors[0]
+    if (!injectedConnector) {
+      toast.error('No wallet connector available. Please install MetaMask.')
+      return
+    }
+    connect({ connector: injectedConnector })
+  }
+
+  const disconnectWallet = () => {
+    wagmiDisconnect()
     setWallet(null)
     setError(null)
   }
 
   return (
-    <WalletContext.Provider value={{ wallet, isLoading, error, refreshWallet, disconnect }}>
+    <WalletContext.Provider value={{ wallet, isLoading, error, isConnected, isConnecting: isPending, refreshWallet, connect: connectWallet, disconnect: disconnectWallet }}>
       {children}
     </WalletContext.Provider>
   )

@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ArrowUpRight, Loader2, CheckCircle2, AlertCircle, Copy } from 'lucide-react'
+import { X, ArrowUpRight, Loader2, CheckCircle2, Copy } from 'lucide-react'
+import { useAccount, useChainId, useSendTransaction, useSwitchChain, useWriteContract } from 'wagmi'
+import { parseEther, parseUnits } from 'viem'
 import { useWallet } from '@/contexts/WalletContext'
 import { api } from '@/lib/api'
 import { toast } from 'react-hot-toast'
@@ -15,17 +17,40 @@ interface SendTransactionModalProps {
 
 export function SendTransactionModal({ isOpen, onClose, onSuccess }: SendTransactionModalProps) {
   const { wallet } = useWallet()
+  const { address, isConnected } = useAccount()
+  const chainId = useChainId()
+  const { switchChainAsync } = useSwitchChain()
+  const { sendTransactionAsync } = useSendTransaction()
+  const { writeContractAsync } = useWriteContract()
   const [recipient, setRecipient] = useState('')
   const [amount, setAmount] = useState('')
   const [token, setToken] = useState<'USDC' | 'ARC'>('USDC')
   const [description, setDescription] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [txHash, setTxHash] = useState<string | null>(null)
+  const [txMode, setTxMode] = useState<'onchain' | 'bft' | null>(null)
+
+  const ARC_CHAIN_ID = Number(process.env.NEXT_PUBLIC_ARC_CHAIN_ID || 5042002)
+  const usdcAddress = process.env.NEXT_PUBLIC_USDC_CONTRACT as `0x${string}` | undefined
+  const usdcDecimals = Number(process.env.NEXT_PUBLIC_USDC_DECIMALS || 6)
+
+  const erc20Abi = [
+    {
+      type: 'function',
+      name: 'transfer',
+      stateMutability: 'nonpayable',
+      inputs: [
+        { name: 'to', type: 'address' },
+        { name: 'amount', type: 'uint256' },
+      ],
+      outputs: [{ name: '', type: 'bool' }],
+    },
+  ] as const
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!wallet?.address) {
+    if (!address || !isConnected) {
       toast.error('Please connect your wallet first')
       return
     }
@@ -51,10 +76,56 @@ export function SendTransactionModal({ isOpen, onClose, onSuccess }: SendTransac
     setIsSubmitting(true)
 
     try {
-      // Option 1: Direct settlement (if available)
-      // Option 2: Use agent to make decision
+      if (chainId !== ARC_CHAIN_ID) {
+        try {
+          await switchChainAsync({ chainId: ARC_CHAIN_ID })
+        } catch (switchError) {
+          toast.error('Please switch to Arc Testnet to send transactions.')
+          return
+        }
+      }
+
+      // Prefer onchain wallet transaction
+      if (token === 'ARC') {
+        const hash = await sendTransactionAsync({
+          to: recipient as `0x${string}`,
+          value: parseEther(amount),
+        })
+        setTxHash(hash)
+        setTxMode('onchain')
+        toast.success('Transaction submitted onchain!')
+        onSuccess?.()
+        setTimeout(() => {
+          handleClose()
+        }, 3000)
+        return
+      }
+
+      if (token === 'USDC' && usdcAddress) {
+        const hash = await writeContractAsync({
+          address: usdcAddress,
+          abi: erc20Abi,
+          functionName: 'transfer',
+          args: [recipient as `0x${string}`, parseUnits(amount, usdcDecimals)],
+        })
+        setTxHash(hash)
+        setTxMode('onchain')
+        toast.success('USDC transfer submitted onchain!')
+        onSuccess?.()
+        setTimeout(() => {
+          handleClose()
+        }, 3000)
+        return
+      }
+
+      if (token === 'USDC' && !usdcAddress) {
+        toast.error('USDC contract address not configured.')
+        return
+      }
+
+      // Fallback: backend settlement + BFT flow
       const result = await api.initiateTransaction({
-        from: wallet.address,
+        from: address,
         to: recipient,
         amount: amountNum.toString(),
         token,
@@ -63,19 +134,16 @@ export function SendTransactionModal({ isOpen, onClose, onSuccess }: SendTransac
 
       if (result.txHash) {
         setTxHash(result.txHash)
-        toast.success('Transaction initiated!')
+        setTxMode('bft')
+        toast.success('Transaction initiated via backend!')
         onSuccess?.()
-        
-        // Close modal after 3 seconds
         setTimeout(() => {
           handleClose()
         }, 3000)
       } else if (result.decisionId) {
-        // Transaction requires agent decision and BFT verification
         toast.success('Transaction submitted for verification. Waiting for BFT consensus...')
         setTxHash(result.decisionId)
-        
-        // Poll for transaction status
+        setTxMode('bft')
         pollTransactionStatus(result.decisionId)
       }
     } catch (error: any) {
@@ -128,6 +196,7 @@ export function SendTransactionModal({ isOpen, onClose, onSuccess }: SendTransac
       setAmount('')
       setDescription('')
       setTxHash(null)
+      setTxMode(null)
       onClose()
     }
   }
@@ -137,7 +206,7 @@ export function SendTransactionModal({ isOpen, onClose, onSuccess }: SendTransac
     toast.success('Copied to clipboard!')
   }
 
-  const maxAmount = token === 'USDC' 
+  const maxAmount = token === 'USDC'
     ? parseFloat(wallet?.balance?.USDC || '0')
     : parseFloat(wallet?.balance?.ARC || '0')
 
@@ -180,7 +249,9 @@ export function SendTransactionModal({ isOpen, onClose, onSuccess }: SendTransac
               <div className="text-center">
                 <h3 className="font-semibold mb-2">Transaction Initiated!</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Your transaction is being processed and verified by our BFT consensus layer.
+                  {txMode === 'onchain'
+                    ? 'Your transaction was submitted onchain. It will be confirmed shortly.'
+                    : 'Your transaction is being processed and verified by our BFT consensus layer.'}
                 </p>
                 <div className="flex items-center justify-center gap-2 p-3 bg-dark-100 rounded-lg">
                   <code className="text-xs font-mono">{txHash.slice(0, 10)}...{txHash.slice(-8)}</code>
@@ -191,14 +262,16 @@ export function SendTransactionModal({ isOpen, onClose, onSuccess }: SendTransac
                     <Copy className="w-4 h-4" />
                   </button>
                 </div>
-                <a
-                  href={`https://testnet.arcscan.io/tx/${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline mt-4 inline-block"
-                >
-                  View on ArcScan →
-                </a>
+                {txHash.startsWith('0x') && (
+                  <a
+                    href={`https://testnet.arcscan.io/tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline mt-4 inline-block"
+                  >
+                    View on ArcScan →
+                  </a>
+                )}
               </div>
             </div>
           ) : (

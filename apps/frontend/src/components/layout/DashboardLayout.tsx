@@ -16,7 +16,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { useDisconnect } from 'wagmi'
 import { useWallet } from '@/contexts/WalletContext'
 import { NotificationsModal } from '@/components/modals/NotificationsModal'
 import { HelpModal } from '@/components/modals/HelpModal'
@@ -41,11 +40,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [showHelp, setShowHelp] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const { disconnect: disconnectWallet } = useDisconnect()
-  const { wallet, disconnect: clearWallet } = useWallet()
+  const { wallet, disconnect: clearWallet, connect, isConnected, isConnecting } = useWallet()
 
   const handleDisconnect = () => {
-    disconnectWallet()
     clearWallet()
     router.push('/')
   }
@@ -131,13 +128,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
             )}
 
-            <button
-              onClick={handleDisconnect}
-              className="flex items-center gap-3 px-4 py-2 w-full rounded-xl text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              {!collapsed && <span>Disconnect</span>}
-            </button>
+            {isConnected ? (
+              <button
+                onClick={handleDisconnect}
+                className="flex items-center gap-3 px-4 py-2 w-full rounded-xl text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                <LogOut className="w-5 h-5" />
+                {!collapsed && <span>Disconnect</span>}
+              </button>
+            ) : (
+              <button
+                onClick={connect}
+                disabled={isConnecting}
+                className="flex items-center gap-3 px-4 py-2 w-full rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Wallet className="w-5 h-5" />
+                {!collapsed && <span>{isConnecting ? 'Connecting...' : 'Connect Wallet'}</span>}
+              </button>
+            )}
           </div>
 
           {/* Collapse Toggle */}
