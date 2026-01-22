@@ -31,6 +31,7 @@
   * {
     border-color: hsl(var(--border));
   }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
@@ -60,17 +61,17 @@
 /* Glow Effects */
 .glow-primary {
   box-shadow: 0 0 20px theme('colors.primary.DEFAULT / 40%'),
-              0 0 40px theme('colors.primary.DEFAULT / 20%');
+    0 0 40px theme('colors.primary.DEFAULT / 20%');
 }
 
 .glow-accent {
   box-shadow: 0 0 20px theme('colors.accent.DEFAULT / 40%'),
-              0 0 40px theme('colors.accent.DEFAULT / 20%');
+    0 0 40px theme('colors.accent.DEFAULT / 20%');
 }
 
 .glow-quantum {
   box-shadow: 0 0 20px theme('colors.quantum.glow / 40%'),
-              0 0 60px theme('colors.quantum.glow / 20%');
+    0 0 60px theme('colors.quantum.glow / 20%');
 }
 
 /* Glass Effect */
@@ -83,7 +84,7 @@
 /* Cyber Grid Background */
 .cyber-grid {
   background-size: 50px 50px;
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(124, 58, 237, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(124, 58, 237, 0.05) 1px, transparent 1px);
 }
@@ -101,9 +102,9 @@
   position: relative;
   overflow: hidden;
   border-radius: 1rem;
-  background: linear-gradient(135deg, 
-    rgba(26, 26, 46, 0.8) 0%, 
-    rgba(15, 52, 96, 0.6) 100%);
+  background: linear-gradient(135deg,
+      rgba(26, 26, 46, 0.8) 0%,
+      rgba(15, 52, 96, 0.6) 100%);
   border: 1px solid rgba(124, 58, 237, 0.3);
 }
 
@@ -114,11 +115,11 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(124, 58, 237, 0.5), 
-    rgba(20, 245, 221, 0.5), 
-    transparent);
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(124, 58, 237, 0.5),
+      rgba(20, 245, 221, 0.5),
+      transparent);
 }
 
 /* Button Styles */
@@ -147,7 +148,7 @@
   border-radius: 0.75rem;
   opacity: 0;
   transition: opacity 0.3s;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
 }
 
 .btn-quantum:hover::before {
@@ -176,10 +177,13 @@
 
 /* Animations */
 @keyframes quantum-shift {
-  0%, 100% { 
+
+  0%,
+  100% {
     background-position: 0% 50%;
   }
-  50% { 
+
+  50% {
     background-position: 100% 50%;
   }
 }
@@ -191,19 +195,44 @@
 
 /* Captain Whiskers Mascot Animation */
 @keyframes whisker-twitch {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(5deg); }
-  75% { transform: rotate(-5deg); }
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(5deg);
+  }
+
+  75% {
+    transform: rotate(-5deg);
+  }
 }
 
 @keyframes tail-wag {
-  0%, 100% { transform: rotate(-10deg); }
-  50% { transform: rotate(10deg); }
+
+  0%,
+  100% {
+    transform: rotate(-10deg);
+  }
+
+  50% {
+    transform: rotate(10deg);
+  }
 }
 
 @keyframes blink {
-  0%, 90%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.1); }
+
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  95% {
+    transform: scaleY(0.1);
+  }
 }
 
 .whisker-animate {
@@ -229,7 +258,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(0, 217, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 8px 32px 0 rgba(0, 0, 0, 0.37),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
 }
@@ -242,33 +271,73 @@
 
 /* Animation Keyframes */
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fade-in-up {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scale-in {
-  0% { opacity: 0; transform: scale(0.9); }
-  100% { opacity: 1; transform: scale(1); }
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes slide-in-bottom {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Animation Utilities */
@@ -289,19 +358,42 @@
 }
 
 /* Staggered list animations */
-.stagger-list > * {
+.stagger-list>* {
   opacity: 0;
   animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.stagger-list > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-list > *:nth-child(2) { animation-delay: 50ms; }
-.stagger-list > *:nth-child(3) { animation-delay: 100ms; }
-.stagger-list > *:nth-child(4) { animation-delay: 150ms; }
-.stagger-list > *:nth-child(5) { animation-delay: 200ms; }
-.stagger-list > *:nth-child(6) { animation-delay: 250ms; }
-.stagger-list > *:nth-child(7) { animation-delay: 300ms; }
-.stagger-list > *:nth-child(8) { animation-delay: 350ms; }
+.stagger-list>*:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.stagger-list>*:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.stagger-list>*:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.stagger-list>*:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+.stagger-list>*:nth-child(5) {
+  animation-delay: 200ms;
+}
+
+.stagger-list>*:nth-child(6) {
+  animation-delay: 250ms;
+}
+
+.stagger-list>*:nth-child(7) {
+  animation-delay: 300ms;
+}
+
+.stagger-list>*:nth-child(8) {
+  animation-delay: 350ms;
+}
 
 /* Chart line animation */
 .chart-line-animated {
@@ -311,23 +403,43 @@
 }
 
 @keyframes draw-line {
-  from { stroke-dashoffset: 1000; }
-  to { stroke-dashoffset: 0; }
+  from {
+    stroke-dashoffset: 1000;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* Value flash animations */
 @keyframes flash-green {
-  0% { background-color: rgba(0, 255, 148, 0.3); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: rgba(0, 255, 148, 0.3);
+  }
+
+  100% {
+    background-color: transparent;
+  }
 }
 
 @keyframes flash-red {
-  0% { background-color: rgba(255, 71, 87, 0.3); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: rgba(255, 71, 87, 0.3);
+  }
+
+  100% {
+    background-color: transparent;
+  }
 }
 
-.flash-up { animation: flash-green 0.6s ease-out; }
-.flash-down { animation: flash-red 0.6s ease-out; }
+.flash-up {
+  animation: flash-green 0.6s ease-out;
+}
+
+.flash-down {
+  animation: flash-red 0.6s ease-out;
+}
 
 /* Tap/Press feedback */
 .tap-highlight {
@@ -359,6 +471,7 @@
 .price-up {
   color: #00FF94;
 }
+
 .price-up::before {
   content: '▲ ';
   font-size: 0.75em;
@@ -367,6 +480,7 @@
 .price-down {
   color: #FF4757;
 }
+
 .price-down::before {
   content: '▼ ';
   font-size: 0.75em;
@@ -380,7 +494,7 @@
   overflow: hidden;
 }
 
-.allocation-bar > div {
+.allocation-bar>div {
   height: 100%;
   transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -423,7 +537,9 @@
 }
 
 @keyframes ping {
-  75%, 100% {
+
+  75%,
+  100% {
     transform: scale(2);
     opacity: 0;
   }
@@ -498,12 +614,10 @@
 /* Divider with glow */
 .divider-glow {
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(0, 217, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(0, 217, 255, 0.3),
+      transparent);
 }
 
 /* Refresh spinner */
@@ -513,8 +627,15 @@
 
 /* Count animation */
 @keyframes count-up {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-count {
@@ -523,8 +644,13 @@
 
 /* Backdrop animation */
 @keyframes fade-backdrop {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-backdrop {
