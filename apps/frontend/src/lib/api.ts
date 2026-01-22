@@ -62,6 +62,27 @@ export interface GatewayTransfer {
   createdAt: string
 }
 
+export interface AgentDecision {
+  id: string
+  type: 'buy' | 'sell' | 'hold' | 'rebalance' | 'purchase_api'
+  status: 'pending' | 'verifying' | 'verified' | 'rejected' | 'executed' | 'failed'
+  parameters?: {
+    asset?: string
+    quantity?: number
+    amount?: number
+    apiEndpoint?: string
+  }
+  reasoning?: string
+  verificationResult?: {
+    totalSignatures: number
+    requiredSignatures: number
+    consensusReached: boolean
+    timestamp: string
+  }
+  transactionHash?: string
+  createdAt: string
+}
+
 class ApiService {
   private baseUrl: string
 
@@ -235,9 +256,9 @@ class ApiService {
     }
   }
 
-  async getAgentHistory(limit = 20): Promise<any[]> {
+  async getAgentHistory(limit = 20): Promise<AgentDecision[]> {
     try {
-      return await this.request<any[]>(`/agent/history?limit=${limit}`)
+      return await this.request<AgentDecision[]>(`/agent/history?limit=${limit}`)
     } catch (error) {
       return []
     }
