@@ -55,6 +55,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [isDemoRunning, setIsDemoRunning] = useState(false)
+  const [runSeed, setRunSeed] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const onInsightsChangeRef = useRef(onInsightsChange)
 
@@ -293,6 +294,14 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     }
   }
 
+  useEffect(() => {
+    if (runSeed === 0) return
+    const start = async () => {
+      await runFullDemo()
+    }
+    start()
+  }, [runSeed])
+
   const handleSend = async () => {
     if (!input.trim() || isDemoRunning) return
 
@@ -378,6 +387,27 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
 
   return (
     <div className="flex flex-col h-80">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-dark-100/60 px-4 py-3">
+        <div className="text-xs text-muted-foreground">
+          Mode:{' '}
+          <span
+            className={`ml-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs ${
+              api.getStoredAuthToken()
+                ? 'bg-green-500/20 text-green-300'
+                : 'bg-yellow-500/20 text-yellow-300'
+            }`}
+          >
+            {api.getStoredAuthToken() ? 'Live mode' : 'Simulation mode'}
+          </span>
+        </div>
+        <button
+          onClick={() => setRunSeed((prev) => prev + 1)}
+          disabled={isDemoRunning}
+          className="btn-quantum text-xs disabled:opacity-60"
+        >
+          {isDemoRunning ? 'Running full demo...' : 'Run full demo'}
+        </button>
+      </div>
       {/* Prompt helpers */}
       {!input.trim() && (
         <div className="mb-4">
