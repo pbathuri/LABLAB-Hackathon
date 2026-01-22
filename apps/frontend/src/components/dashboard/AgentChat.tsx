@@ -41,7 +41,7 @@ interface AgentChatProps {
   onInsightsChange?: (insights: PromptInsights | null) => void
 }
 
-export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
+export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: AgentChatProps) {
   const { wallet } = useWallet()
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -55,6 +55,11 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const onInsightsChangeRef = useRef(onInsightsChange)
+
+  useEffect(() => {
+    onInsightsChangeRef.current = onInsightsChange
+  }, [onInsightsChange])
 
   const suggestedPrompts = [
     'Optimize portfolio for low risk with 60% USDC',
@@ -125,20 +130,13 @@ export function AgentChat({ onMoodChange, onSpeakingChange }: AgentChatProps) {
   }, [wallet?.balance])
 
   const insights = useMemo(() => getPromptInsights(input), [input, getPromptInsights])
-  const handleInsightsChange = useCallback(
-    (value: PromptInsights | null) => {
-      onInsightsChange?.(value)
-    },
-    [onInsightsChange],
-  )
-
   useEffect(() => {
     if (input.trim()) {
-      handleInsightsChange(insights)
+      onInsightsChangeRef.current?.(insights)
     } else {
-      handleInsightsChange(null)
+      onInsightsChangeRef.current?.(null)
     }
-  }, [input, insights, handleInsightsChange])
+  }, [input, insights])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
