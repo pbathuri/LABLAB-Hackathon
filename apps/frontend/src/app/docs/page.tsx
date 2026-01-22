@@ -72,6 +72,33 @@ export default function DocsPage() {
               <li>All transactions are verified by 11-node BFT consensus</li>
             </ul>
           </div>
+
+          <div className="mt-8 card-quantum p-8">
+            <h2 className="text-2xl font-semibold mb-4">Post-Quantum Readiness</h2>
+            <p className="text-muted-foreground mb-4">
+              We align our security roadmap with Circle’s research on quantum threats to blockchain
+              infrastructure and post-quantum transition planning.
+            </p>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="text-sm text-muted-foreground">
+                Reference: <span className="text-white">Preparing Blockchains for Q-Day</span>
+              </div>
+              <a
+                href="https://www.circle.com/blog/preparing-blockchains-for-q-day"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline flex items-center gap-2"
+              >
+                Read the blog post <ArrowLeft className="w-4 h-4 rotate-180" />
+              </a>
+            </div>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground mt-4">
+              <li>We adopt post-quantum signing (Dilithium) for off-chain EIP-712 authorization.</li>
+              <li>Our BFT verification layer is designed to upgrade validator signatures.</li>
+              <li>We prepare for larger PQ signatures and address migration paths.</li>
+              <li>We plan for PQ-safe ZK systems (STARK/SNARG) over elliptic-curve SNARKs.</li>
+            </ul>
+          </div>
         </motion.div>
       </div>
     </div>

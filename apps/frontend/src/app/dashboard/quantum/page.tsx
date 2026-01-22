@@ -68,6 +68,26 @@ export default function QuantumPage() {
             </div>
           </div>
 
+          {/* Q-Day Reference */}
+          <div className="card-quantum p-6 mb-8">
+            <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              Preparing for Q-Day
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              We align with Circle’s post-quantum roadmap and research on upgrading consensus,
+              signatures, and zero-knowledge systems.
+            </p>
+            <a
+              href="https://www.circle.com/blog/preparing-blockchains-for-q-day"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline inline-flex items-center gap-2 mt-3"
+            >
+              Read the Circle blog <span aria-hidden>→</span>
+            </a>
+          </div>
+
           {/* Portfolio Allocation */}
           <div className="card-quantum p-6">
             <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">

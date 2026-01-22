@@ -11,6 +11,7 @@ import { MicropaymentModule } from './modules/micropayment/micropayment.module';
 import { PolicyModule } from './modules/policy/policy.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ReliabilityModule } from './modules/reliability/reliability.module';
+import { CircleModule } from './modules/circle/circle.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { ReliabilityModule } from './modules/reliability/reliability.module';
     MicropaymentModule,
     PolicyModule,
     ReliabilityModule,
+    CircleModule,
   ],
 })
 export class AppModule {}

@@ -47,6 +47,22 @@ class ApiService {
     return null
   }
 
+  setAuthToken(token: string) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token)
+    }
+  }
+
+  clearAuthToken() {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token')
+    }
+  }
+
+  getStoredAuthToken(): string | null {
+    return this.getAuthToken()
+  }
+
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     try {
       const token = this.getAuthToken()
@@ -196,6 +212,60 @@ class ApiService {
     } catch (error) {
       return []
     }
+  }
+
+  // Circle integration config
+  async getCircleConfig(): Promise<{
+    consoleUrl: string
+    arc: { chainId: number; usdcContract?: string | null }
+    wallets: { enabled: boolean }
+    gateway: { enabled: boolean }
+    bridge: { enabled: boolean }
+    x402: { enabled: boolean }
+    appBuilder: { enabled: boolean }
+  }> {
+    return this.request('/circle/config')
+  }
+
+  // Micropayments (x402)
+  async createMicropayment(params: {
+    payee: string
+    amount: string
+    apiEndpoint?: string
+    providerId?: string
+    model?: 'pay_per_call' | 'pay_on_success' | 'bundled'
+    description?: string
+  }) {
+    return this.request('/micropayments/create', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    })
+  }
+
+  async authorizeMicropayment(id: string) {
+    return this.request(`/micropayments/${id}/authorize`, { method: 'POST' })
+  }
+
+  async completeMicropayment(id: string, callResult?: any) {
+    return this.request(`/micropayments/${id}/complete`, {
+      method: 'POST',
+      body: JSON.stringify({ callResult }),
+    })
+  }
+
+  async failMicropayment(id: string, reason: string) {
+    return this.request(`/micropayments/${id}/fail`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    })
+  }
+
+  async refundMicropayment(id: string) {
+    return this.request(`/micropayments/${id}/refund`, { method: 'POST' })
+  }
+
+  async getMicropaymentHistory() {
+    return this.request('/micropayments/history')
   }
 }
 

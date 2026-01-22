@@ -15,6 +15,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Coins,
 } from 'lucide-react'
 import { useWallet } from '@/contexts/WalletContext'
 import { NotificationsModal } from '@/components/modals/NotificationsModal'
@@ -27,6 +28,7 @@ interface DashboardLayoutProps {
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/wallet', icon: Wallet, label: 'Wallet' },
+  { href: '/dashboard/circle', icon: Coins, label: 'Circle' },
   { href: '/dashboard/quantum', icon: Cpu, label: 'Quantum' },
   { href: '/dashboard/verification', icon: Shield, label: 'Verification' },
   { href: '/dashboard/history', icon: History, label: 'History' },
