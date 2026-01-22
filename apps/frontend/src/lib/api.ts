@@ -116,7 +116,7 @@ class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     try {
       const token = this.getAuthToken()
-      const headers: HeadersInit = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         ...options?.headers,
       }
