@@ -54,6 +54,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
   ])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [isDemoRunning, setIsDemoRunning] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const onInsightsChangeRef = useRef(onInsightsChange)
 
@@ -66,6 +67,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     'Send 10 USDC to 0x... and log on ArcScan',
     'Run x402 pay-per-call for market data',
     'Verify last settlement with BFT quorum',
+    'Run full demo',
   ]
 
   const clamp = (value: number, min: number, max: number) =>
@@ -146,8 +148,122 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     scrollToBottom()
   }, [messages])
 
+  const addAgentMessage = useCallback((content: string) => {
+    const agentMessage: Message = {
+      id: (Date.now() + Math.random()).toString(),
+      role: 'agent',
+      content,
+      timestamp: new Date(),
+    }
+    setMessages((prev) => [...prev, agentMessage])
+  }, [])
+
+  const shortenHash = (hash?: string | null) => {
+    if (!hash) return 'N/A'
+    return `${hash.slice(0, 10)}...${hash.slice(-6)}`
+  }
+
+  const extractPaymentId = (payload: any) =>
+    payload?.id || payload?.requestId || payload?.data?.id || payload?.paymentId || null
+
+  const runFullDemo = async () => {
+    if (isDemoRunning) return
+
+    const authToken = api.getStoredAuthToken()
+    if (!authToken) {
+      addAgentMessage(
+        "To run the full demo, add your JWT token in the Circle page under 'Backend Authentication'.",
+      )
+      onMoodChange?.('alert')
+      return
+    }
+
+    setIsDemoRunning(true)
+    setIsTyping(true)
+    onMoodChange?.('thinking')
+    addAgentMessage(
+      'Starting full demo. I’ll chain Circle Wallets → Gateway settlement → x402 → Agent decision.',
+    )
+
+    try {
+      const circleWallet = await api.createCircleWallet({
+        type: 'dev_controlled',
+        label: 'Demo Treasury Wallet',
+      })
+      addAgentMessage(
+        `1) Circle wallet created: ${circleWallet.address.slice(0, 6)}...${circleWallet.address.slice(-4)}.`,
+      )
+
+      const gatewayTransfer = await api.createGatewaySettlement({
+        amount: '25',
+        sourceChain: 'Arc Testnet',
+        destinationChain: 'Arc Testnet',
+        fromWalletId: circleWallet.walletId,
+        toAddress: circleWallet.address,
+        notes: 'Full demo settlement',
+      })
+      addAgentMessage(
+        `2) Gateway settlement completed: ${gatewayTransfer.amount} USDC · Tx ${shortenHash(
+          gatewayTransfer.txHash,
+        )}.`,
+      )
+
+      const payment = await api.createMicropayment({
+        payee: circleWallet.address,
+        amount: '0.01',
+        apiEndpoint: '/api/agent/decide',
+        providerId: 'gemini-flash',
+        model: 'pay_per_call',
+        description: 'Full demo x402 payment',
+      })
+      const paymentId = extractPaymentId(payment)
+      addAgentMessage(`3) x402 payment created: ${paymentId || 'created'}.`)
+
+      if (paymentId) {
+        await api.authorizeMicropayment(paymentId)
+        addAgentMessage('4) x402 authorized successfully.')
+        await api.completeMicropayment(paymentId, { ok: true, demo: true })
+        addAgentMessage('5) x402 completed with atomic settlement recorded.')
+      } else {
+        addAgentMessage('4) Unable to locate x402 payment id; skipping authorization.')
+      }
+
+      const decisionPrompt =
+        'Optimize portfolio with low risk, keep 60% USDC, 30% ETH, 10% ARC, and verify via BFT.'
+      const decisionStats = getPromptInsights(decisionPrompt)
+      const decision = await api.makeAgentDecision({
+        instruction: decisionPrompt,
+        portfolioState: wallet?.balance || { USDC: 1000 },
+        marketData: {},
+        riskTolerance: 0.4,
+      })
+
+      addAgentMessage(
+        `6) Agent decision queued: ${decision.decisionId}. Confidence ${Math.round(
+          decisionStats.confidence * 100,
+        )}% · Risk ${Math.round(decisionStats.risk * 100)}% · ETA ${decisionStats.latency.toFixed(
+          1,
+        )}s.`,
+      )
+      addAgentMessage(
+        'Full demo complete. Open the AI Decision Log to review BFT status and ArcScan links.',
+      )
+      onMoodChange?.('happy')
+      onSpeakingChange?.(true)
+      setTimeout(() => onSpeakingChange?.(false), 2000)
+    } catch (error: any) {
+      addAgentMessage(
+        `Full demo paused: ${error?.message || 'Something went wrong.'} You can retry anytime.`,
+      )
+      onMoodChange?.('alert')
+    } finally {
+      setIsTyping(false)
+      setIsDemoRunning(false)
+    }
+  }
+
   const handleSend = async () => {
-    if (!input.trim()) return
+    if (!input.trim() || isDemoRunning) return
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -161,6 +277,12 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     setInput('')
     setIsTyping(true)
     onMoodChange?.('thinking')
+
+    if (userInput.trim().toLowerCase().includes('run full demo')) {
+      await runFullDemo()
+      setIsTyping(false)
+      return
+    }
 
     try {
       // Call backend agent API
@@ -367,10 +489,11 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask Captain Whiskers..."
             className="w-full px-4 py-3 pr-12 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
+            disabled={isDemoRunning}
           />
           <button
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isDemoRunning}
             className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-600 transition-colors"
           >
             <Send className="w-4 h-4" />
