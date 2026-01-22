@@ -2,6 +2,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Install build dependencies for argon2
+RUN apk add --no-cache python3 make g++ gcc
+
 # Copy package files
 COPY package*.json ./
 

@@ -1,24 +1,20 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import localFont from 'next/font/local'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers'
 
-const geistSans = Geist({
+const inter = Inter({
   variable: '--font-geist-sans',
   subsets: ['latin'],
 })
 
-const geistMono = Geist_Mono({
+const jetbrainsMono = JetBrains_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 })
 
-const orbitron = localFont({
-  src: '../fonts/Orbitron-VariableFont_wght.ttf',
-  variable: '--font-orbitron',
-  display: 'swap',
-})
+// Use Inter as fallback for display font
+const orbitronVariable = '--font-orbitron'
 
 export const metadata: Metadata = {
   title: 'Captain Whiskers | Trustless AI Treasury',
@@ -40,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} antialiased bg-dark text-white min-h-screen`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-dark text-white min-h-screen`}
       >
         <Providers>
           {children}

@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: captain_whiskers
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -24,7 +24,7 @@ services:
     image: redis:7-alpine
     container_name: captain-whiskers-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
 
@@ -36,6 +36,7 @@ services:
     container_name: captain-whiskers-backend
     environment:
       - NODE_ENV=development
+      - PORT=3001
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USERNAME=postgres
@@ -44,16 +45,18 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - QUANTUM_SERVICE_URL=http://quantum:8000
+      - GEMINI_API_KEY=AIzaSyAYWxhjVCfa7yIvCiqJIWm4xi6biLgEoKU
+      - CIRCLE_API_KEY=10d449cfe62733f77253ddcd466bf71d:1feea152581afa7adcebb320762b1376
+      - PRIVATE_KEY=0x59a4c1937c9db471392671e2bf01372c2d19302ad60fd1ab6b98766da90d988d
+      - TREASURY_ADDRESS=0x5B8648f8BE56A43C926783CA0E51FbD0540822B4
+      - ARC_RPC_URL=https://rpc.testnet.arc.network
     ports:
-      - "3001:3001"
+      - "4001:3001"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
-    volumes:
-      - ./apps/backend:/app
-      - /app/node_modules
 
   # Python Quantum Service
   quantum:
@@ -62,7 +65,7 @@ services:
       dockerfile: Dockerfile
     container_name: captain-whiskers-quantum
     ports:
-      - "8000:8000"
+      - "4002:8000"
     volumes:
       - ./apps/quantum-service:/app
     environment:
@@ -78,7 +81,7 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:3001
       - NEXT_PUBLIC_QUANTUM_API_URL=http://localhost:8000
     ports:
-      - "3000:3000"
+      - "4000:3000"
     depends_on:
       - backend
     volumes:
