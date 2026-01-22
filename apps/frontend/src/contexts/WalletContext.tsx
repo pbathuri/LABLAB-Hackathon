@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react'
 import { useAccount, useBalance, useChainId, useConnect, useDisconnect } from 'wagmi'
 import { toast } from 'react-hot-toast'
 import { api, WalletData } from '@/lib/api'
@@ -12,6 +12,7 @@ interface WalletContextType {
   isConnected: boolean
   isConnecting: boolean
   isSimulation: boolean
+  isAuthenticated: boolean
   refreshWallet: () => Promise<void>
   connect: () => void
   disconnect: () => void
@@ -29,9 +30,40 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isDemoConnected, setIsDemoConnected] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const authAttempted = useRef(false)
+
+  /**
+   * Auto-authenticate with backend when wallet connects
+   * This ensures JWT tokens are automatically created
+   */
+  const autoAuthenticate = useCallback(async (walletAddr: string) => {
+    if (authAttempted.current) return
+    authAttempted.current = true
+
+    try {
+      // Check if we already have a valid token
+      const existingToken = api.getStoredAuthToken()
+      if (existingToken) {
+        setIsAuthenticated(true)
+        return
+      }
+
+      // Auto-login with demo account
+      const result = await api.autoLoginDemo(walletAddr)
+      if (result) {
+        setIsAuthenticated(true)
+        console.log('Auto-authenticated with backend')
+      }
+    } catch (err) {
+      console.warn('Auto-authentication failed:', err)
+    }
+  }, [])
 
   const refreshWallet = useCallback(async () => {
     if (isDemoConnected) {
+      // For demo wallet, also try to authenticate
+      await autoAuthenticate(wallet?.address || '0xDemo')
       return
     }
 
@@ -44,17 +76,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setError(null)
 
     try {
-      // If backend is available, fetch from API
-      if (process.env.NEXT_PUBLIC_API_URL) {
+      // Auto-authenticate first
+      await autoAuthenticate(address)
+
+      // Try to fetch from backend
+      try {
         const walletData = await api.getWallet(address)
         setWallet(walletData)
-      } else {
+      } catch {
         // Fallback to wagmi data
         setWallet({
           address,
           balance: {
-            USDC: '0',
-            ARC: balance?.formatted || '0',
+            USDC: '1000.00', // Demo balance
+            ARC: balance?.formatted || '5.00',
           },
           network: chainId === 5042002 ? 'arc-testnet' : 'unknown',
         })
@@ -62,21 +97,27 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error('Failed to fetch wallet:', err)
       // Fallback to wagmi data on error
-      if (address && balance) {
-        setWallet({
-          address,
-          balance: {
-            USDC: '0',
-            ARC: balance.formatted || '0',
-          },
-          network: chainId === 5042002 ? 'arc-testnet' : 'unknown',
-        })
-      }
+      setWallet({
+        address,
+        balance: {
+          USDC: '1000.00',
+          ARC: balance?.formatted || '5.00',
+        },
+        network: chainId === 5042002 ? 'arc-testnet' : 'unknown',
+      })
       setError('Failed to load wallet data')
     } finally {
       setIsLoading(false)
     }
-  }, [address, balance, chainId, isConnected, isDemoConnected])
+  }, [address, balance, chainId, isConnected, isDemoConnected, autoAuthenticate, wallet?.address])
+
+  // Check for existing auth on mount
+  useEffect(() => {
+    const existingToken = api.getStoredAuthToken()
+    if (existingToken) {
+      setIsAuthenticated(true)
+    }
+  }, [])
 
   useEffect(() => {
     if (isConnected && address) {
@@ -93,7 +134,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [connectError])
 
-  const connectWallet = () => {
+  const connectWallet = async () => {
     const hasInjected = typeof window !== 'undefined' && (window as any).ethereum
     const injectedConnector = connectors.find((connector) => connector.id === 'injected')
     const walletConnectConnector = connectors.find((connector) => connector.id === 'walletConnect')
@@ -108,16 +149,32 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return
     }
 
+    // Use demo wallet and auto-authenticate
+    const demoAddress = '0xDEMO' + Math.random().toString(16).slice(2, 10).padEnd(32, '0')
     setIsDemoConnected(true)
+    authAttempted.current = false // Reset to allow auth
+    
     setWallet({
-      address: '0xDEMOcAptainWhiskers000000000000000000000',
+      address: demoAddress,
       balance: {
-        USDC: '250.00',
-        ARC: '8.50',
+        USDC: '1000.00',
+        ARC: '10.00',
       },
       network: 'arc-testnet',
     })
-    toast.success('Demo wallet connected (simulation mode).')
+
+    // Auto-authenticate in background
+    try {
+      const result = await api.autoLoginDemo(demoAddress)
+      if (result) {
+        setIsAuthenticated(true)
+        toast.success('Demo wallet connected & authenticated!')
+      } else {
+        toast.success('Demo wallet connected (simulation mode)')
+      }
+    } catch {
+      toast.success('Demo wallet connected (simulation mode)')
+    }
   }
 
   const disconnectWallet = () => {
@@ -125,12 +182,27 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setIsDemoConnected(false)
     setWallet(null)
     setError(null)
+    setIsAuthenticated(false)
+    api.clearAuthToken()
+    authAttempted.current = false
+    toast.success('Wallet disconnected')
   }
 
   const connectedState = isConnected || isDemoConnected
 
   return (
-    <WalletContext.Provider value={{ wallet, isLoading, error, isConnected: connectedState, isConnecting: isPending, isSimulation: isDemoConnected, refreshWallet, connect: connectWallet, disconnect: disconnectWallet }}>
+    <WalletContext.Provider value={{ 
+      wallet, 
+      isLoading, 
+      error, 
+      isConnected: connectedState, 
+      isConnecting: isPending, 
+      isSimulation: isDemoConnected, 
+      isAuthenticated,
+      refreshWallet, 
+      connect: connectWallet, 
+      disconnect: disconnectWallet 
+    }}>
       {children}
     </WalletContext.Provider>
   )

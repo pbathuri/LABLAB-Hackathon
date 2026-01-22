@@ -25,7 +25,12 @@ export function PortfolioCard() {
     if (!wallet?.address) return
     setIsOptimizing(true)
     try {
-      await api.optimizePortfolio(wallet.address)
+      // Build holdings from current assets
+      const holdings: Record<string, number> = {}
+      assets.forEach(asset => {
+        holdings[asset.symbol] = asset.value
+      })
+      await api.optimizePortfolio(holdings, 0.5)
       // Refetch portfolio data
     } catch (error) {
       console.error('Optimization failed:', error)

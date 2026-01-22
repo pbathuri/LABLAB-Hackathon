@@ -2,6 +2,9 @@
 
 import { motion } from 'framer-motion'
 import { Cpu, Zap, Activity, TrendingUp } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '@/lib/api'
+import { useWallet } from '@/contexts/WalletContext'
 
 interface QuantumMetric {
   label: string
@@ -11,38 +14,53 @@ interface QuantumMetric {
   icon: React.ReactNode
 }
 
-const mockMetrics: QuantumMetric[] = [
-  {
-    label: 'VQE Iterations',
-    value: '247',
-    change: 'Converged',
-    trend: 'up',
-    icon: <Cpu className="w-5 h-5" />,
-  },
-  {
-    label: 'Circuit Depth',
-    value: '12',
-    change: 'Optimal',
-    trend: 'neutral',
-    icon: <Activity className="w-5 h-5" />,
-  },
-  {
-    label: 'Sharpe Ratio',
-    value: '1.42',
-    change: '+0.12',
-    trend: 'up',
-    icon: <TrendingUp className="w-5 h-5" />,
-  },
-  {
-    label: 'Risk Score',
-    value: '0.34',
-    change: 'Low',
-    trend: 'neutral',
-    icon: <Zap className="w-5 h-5" />,
-  },
-]
-
 export function QuantumInsights() {
+  const { wallet } = useWallet()
+  
+  const { data: optimization } = useQuery({
+    queryKey: ['quantum-dashboard', wallet?.address],
+    queryFn: () => api.getQuantumOptimization(
+      { USDC: parseFloat(wallet?.balance?.USDC || '1000'), ETH: 500, ARC: parseFloat(wallet?.balance?.ARC || '200') },
+      0.5
+    ),
+    enabled: !!wallet?.address,
+    staleTime: 60000, // Cache for 1 minute
+  })
+
+  const sharpeRatio = optimization?.sharpeRatio?.toFixed(2) || '1.42'
+  const riskScore = optimization?.variance ? (optimization.variance).toFixed(2) : '0.34'
+  const expectedReturn = optimization?.expectedReturn ? (optimization.expectedReturn * 100).toFixed(1) : '12.4'
+
+  const metrics: QuantumMetric[] = [
+    {
+      label: 'VQE Iterations',
+      value: '247',
+      change: 'Converged',
+      trend: 'up',
+      icon: <Cpu className="w-5 h-5" />,
+    },
+    {
+      label: 'Expected Return',
+      value: `${expectedReturn}%`,
+      change: 'Optimized',
+      trend: 'up',
+      icon: <Activity className="w-5 h-5" />,
+    },
+    {
+      label: 'Sharpe Ratio',
+      value: sharpeRatio,
+      change: '+0.12',
+      trend: 'up',
+      icon: <TrendingUp className="w-5 h-5" />,
+    },
+    {
+      label: 'Risk Score',
+      value: riskScore,
+      change: parseFloat(riskScore) < 0.5 ? 'Low' : 'Moderate',
+      trend: 'neutral',
+      icon: <Zap className="w-5 h-5" />,
+    },
+  ]
   return (
     <div className="card-quantum p-6">
       <div className="flex items-center justify-between mb-6">
@@ -64,7 +82,7 @@ export function QuantumInsights() {
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        {mockMetrics.map((metric, index) => (
+        {metrics.map((metric, index) => (
           <motion.div
             key={metric.label}
             initial={{ opacity: 0, y: 20 }}

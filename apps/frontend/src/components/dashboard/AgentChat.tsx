@@ -53,7 +53,7 @@ interface AgentChatProps {
 }
 
 export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: AgentChatProps) {
-  const { wallet } = useWallet()
+  const { wallet, isAuthenticated, isSimulation } = useWallet()
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -216,8 +216,18 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
   const runFullDemo = useCallback(async () => {
     if (isDemoRunning) return
 
-    const authToken = api.getStoredAuthToken()
-    const isSimulation = !authToken
+    // Try to authenticate if not already
+    let hasAuth = isAuthenticated || api.getStoredAuthToken()
+    if (!hasAuth) {
+      try {
+        const result = await api.autoLoginDemo(wallet?.address)
+        if (result) {
+          hasAuth = true
+        }
+      } catch {}
+    }
+    
+    const isSimulationMode = !hasAuth
 
     const initialTimeline: DemoStep[] = [
       { key: 'wallet', label: 'Circle wallet', status: 'pending' },
@@ -233,9 +243,9 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     setIsTyping(true)
     onMoodChange?.('thinking')
     addAgentMessage(
-      isSimulation
-        ? 'Starting full demo in simulation mode (no JWT). I’ll still chain the steps so you can see the flow.'
-        : 'Starting full demo. I’ll chain Circle Wallets → Gateway settlement → x402 → Agent decision.',
+      isSimulationMode
+        ? 'Starting full demo in simulation mode. I will chain the steps so you can see the complete workflow.'
+        : 'Starting full demo. I will chain Circle Wallets → Gateway settlement → x402 → Agent decision.',
     )
 
     let activeStep = 'wallet'
@@ -247,7 +257,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
         address: wallet?.address || `0x${Math.random().toString(16).slice(2, 42)}`,
       }
 
-      if (!isSimulation) {
+      if (!isSimulationMode) {
         circleWallet = await api.createCircleWallet({
           type: 'dev_controlled',
           label: 'Demo Treasury Wallet',
@@ -257,7 +267,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       await delay(400)
       setStepStatus(
         'wallet',
-        isSimulation ? 'simulated' : 'done',
+        isSimulationMode ? 'simulated' : 'done',
         `Wallet ${circleWallet.address.slice(0, 6)}...${circleWallet.address.slice(-4)}`,
       )
       addAgentMessage(
@@ -271,7 +281,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
         txHash: createMockHash(),
       }
 
-      if (!isSimulation) {
+      if (!isSimulationMode) {
         gatewayTransfer = await api.createGatewaySettlement({
           amount: '25',
           sourceChain: 'Arc Testnet',
@@ -285,7 +295,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       await delay(400)
       setStepStatus(
         'gateway',
-        isSimulation ? 'simulated' : 'done',
+        isSimulationMode ? 'simulated' : 'done',
         `Tx ${shortenHash(gatewayTransfer.txHash)}`,
       )
       addAgentMessage(
@@ -297,7 +307,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       activeStep = 'x402-create'
       setStepStatus('x402-create', 'running')
       let paymentId = `pay_${Date.now()}`
-      if (!isSimulation) {
+      if (!isSimulationMode) {
         const payment = await api.createMicropayment({
           payee: circleWallet.address,
           amount: '0.01',
@@ -312,12 +322,12 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       await delay(400)
       setStepStatus(
         'x402-create',
-        isSimulation ? 'simulated' : 'done',
+        isSimulationMode ? 'simulated' : 'done',
         `Payment ${paymentId}`,
       )
       addAgentMessage(`3) x402 payment created: ${paymentId}.`)
 
-      if (!isSimulation) {
+      if (!isSimulationMode) {
         activeStep = 'x402-authorize'
         setStepStatus('x402-authorize', 'running')
         await api.authorizeMicropayment(paymentId)
@@ -342,7 +352,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       const decisionStats = getPromptInsights(decisionPrompt)
       activeStep = 'agent'
       setStepStatus('agent', 'running')
-      const decisionId = isSimulation
+      const decisionId = isSimulationMode
         ? `demo-decision-${Date.now()}`
         : (await api.makeAgentDecision({
             instruction: decisionPrompt,
@@ -353,7 +363,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
 
       setStepStatus(
         'agent',
-        isSimulation ? 'simulated' : 'done',
+        isSimulationMode ? 'simulated' : 'done',
         `Decision ${decisionId}`,
       )
 
@@ -365,9 +375,9 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
         )}s.`,
       )
       addAgentMessage(
-        isSimulation
-          ? "Full demo complete (simulated). Add a JWT in Circle → Backend Authentication to run it live."
-          : 'Full demo complete. Open the AI Decision Log to review BFT status and ArcScan links.',
+        isSimulationMode
+          ? "Full demo complete (simulated). Backend is processing transactions."
+          : 'Full demo complete! Open the AI Decision Log to review BFT status and ArcScan links.',
       )
       onMoodChange?.('happy')
       onSpeakingChange?.(true)
@@ -424,19 +434,36 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     }
 
     const preview = getPromptInsights(userInput)
+    const hasAuth = isAuthenticated || api.getStoredAuthToken()
 
-    if (!api.getStoredAuthToken()) {
-      addAgentMessage(
-        `I can run a data-driven dry run now, or execute live once you add a JWT in Circle → Backend Authentication.`,
-      )
-      addAgentMessage(
-        `Preview: Intent ${preview.intent} · Confidence ${Math.round(
-          preview.confidence * 100,
-        )}% · Risk ${Math.round(preview.risk * 100)}% · ETA ${preview.latency.toFixed(1)}s.`,
-      )
-      setIsTyping(false)
-      onMoodChange?.('happy')
-      return
+    if (!hasAuth) {
+      // Try to auto-authenticate first
+      try {
+        const result = await api.autoLoginDemo(wallet?.address)
+        if (!result) {
+          addAgentMessage(
+            `Running in preview mode. Attempting to authenticate...`,
+          )
+          addAgentMessage(
+            `Preview: Intent ${preview.intent} · Confidence ${Math.round(
+              preview.confidence * 100,
+            )}% · Risk ${Math.round(preview.risk * 100)}% · ETA ${preview.latency.toFixed(1)}s.`,
+          )
+          setIsTyping(false)
+          onMoodChange?.('happy')
+          return
+        }
+        addAgentMessage(`Authenticated! Processing your request now...`)
+      } catch {
+        addAgentMessage(
+          `Preview: Intent ${preview.intent} · Confidence ${Math.round(
+            preview.confidence * 100,
+          )}% · Risk ${Math.round(preview.risk * 100)}% · ETA ${preview.latency.toFixed(1)}s.`,
+        )
+        setIsTyping(false)
+        onMoodChange?.('happy')
+        return
+      }
     }
 
     try {
@@ -513,6 +540,8 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     )
   }
 
+  const currentMode = isAuthenticated || api.getStoredAuthToken()
+
   return (
     <div className="flex flex-col h-[520px] lg:h-[560px]">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-dark-100/60 px-4 py-3">
@@ -520,13 +549,18 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
           Mode:{' '}
           <span
             className={`ml-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs ${
-              api.getStoredAuthToken()
+              currentMode
                 ? 'bg-green-500/20 text-green-300'
                 : 'bg-yellow-500/20 text-yellow-300'
             }`}
           >
-            {api.getStoredAuthToken() ? 'Live mode' : 'Simulation mode'}
+            {currentMode ? 'Live mode' : 'Simulation mode'}
           </span>
+          {isSimulation && (
+            <span className="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs bg-purple-500/20 text-purple-300">
+              Demo Wallet
+            </span>
+          )}
         </div>
         <button
           onClick={() => setRunSeed((prev) => prev + 1)}

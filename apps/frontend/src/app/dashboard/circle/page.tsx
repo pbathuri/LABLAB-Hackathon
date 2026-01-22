@@ -39,7 +39,8 @@ export default function CirclePage() {
   const [paymentId, setPaymentId] = useState<string | null>(null)
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null)
   const [isAtomicRunning, setIsAtomicRunning] = useState(false)
-  const { wallet } = useWallet()
+  const [isAutoAuthenticating, setIsAutoAuthenticating] = useState(false)
+  const { wallet, isAuthenticated } = useWallet()
   const [circleWallets, setCircleWallets] = useState<CircleWallet[]>([])
   const [walletType, setWalletType] = useState<'dev_controlled' | 'user_controlled'>('dev_controlled')
   const [walletLabel, setWalletLabel] = useState('')
@@ -162,6 +163,25 @@ export default function CirclePage() {
     }
     api.setAuthToken(authToken.trim())
     toast.success('Backend token saved')
+  }
+
+  const handleAutoAuthenticate = async () => {
+    setIsAutoAuthenticating(true)
+    try {
+      const result = await api.autoLoginDemo(wallet?.address)
+      if (result) {
+        setAuthToken(result.accessToken)
+        toast.success('Authenticated successfully!')
+        refreshWallets()
+        refreshTransfers()
+      } else {
+        toast.error('Auto-authentication failed. Backend may be unavailable.')
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Authentication failed')
+    } finally {
+      setIsAutoAuthenticating(false)
+    }
   }
 
   const handleCreatePayment = async () => {
@@ -463,19 +483,43 @@ export default function CirclePage() {
               <Shield className="w-5 h-5" />
               Backend Authentication
             </h2>
+            
+            {/* Auth Status */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className={`px-3 py-1 rounded-full text-sm ${
+                isAuthenticated || authToken 
+                  ? 'bg-green-500/20 text-green-400' 
+                  : 'bg-yellow-500/20 text-yellow-400'
+              }`}>
+                {isAuthenticated || authToken ? '✓ Authenticated' : '⚠ Not Authenticated'}
+              </span>
+              {!isAuthenticated && !authToken && (
+                <button 
+                  onClick={handleAutoAuthenticate}
+                  disabled={isAutoAuthenticating}
+                  className="btn-quantum text-sm"
+                >
+                  {isAutoAuthenticating ? 'Authenticating...' : 'Auto-Authenticate'}
+                </button>
+              )}
+            </div>
+
             <p className="text-sm text-muted-foreground mb-4">
-              Paste a JWT token to enable Circle backend APIs (micropayments, policy enforcement).
+              {isAuthenticated || authToken 
+                ? 'You are authenticated. Circle backend APIs are enabled.'
+                : 'Click "Auto-Authenticate" to enable Circle backend APIs, or paste a JWT token manually.'}
             </p>
+            
             <div className="flex items-center gap-3">
               <input
                 type="text"
                 value={authToken}
                 onChange={(e) => setAuthToken(e.target.value)}
-                placeholder="Bearer token from /auth/login"
-                className="flex-1 px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none text-sm"
+                placeholder="JWT token (auto-filled when authenticated)"
+                className="flex-1 px-4 py-2 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none text-sm font-mono"
               />
               <button onClick={saveToken} className="btn-quantum">
-                Save Token
+                {authToken ? 'Update' : 'Save'}
               </button>
             </div>
           </div>
