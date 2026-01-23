@@ -27,22 +27,24 @@ const logger = new Logger('AppModule');
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // Database - Use DATABASE_URL, fallback to SQLite for demo mode
+    // Database - Default to SQLite demo mode for hackathon reliability
+    // Set USE_POSTGRES=true with valid DATABASE_URL to use PostgreSQL
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get('DATABASE_URL');
+        const usePostgres = configService.get('USE_POSTGRES') === 'true';
         
-        // Use DATABASE_URL if provided (PostgreSQL)
-        if (databaseUrl && databaseUrl !== 'demo') {
-          logger.log('Using PostgreSQL database');
+        // Only use PostgreSQL if explicitly enabled AND DATABASE_URL is set
+        if (usePostgres && databaseUrl && databaseUrl !== 'demo') {
+          logger.log('Using PostgreSQL database (USE_POSTGRES=true)');
           const normalizedUrl = databaseUrl.replace(/^postgresql:\/\//, 'postgres://');
           
           return {
             type: 'postgres',
             url: normalizedUrl,
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: true, // Auto-create tables for demo
+            synchronize: true,
             logging: configService.get('NODE_ENV') === 'development',
             retryAttempts: 3,
             retryDelay: 3000,
@@ -51,8 +53,8 @@ const logger = new Logger('AppModule');
           };
         }
         
-        // Fallback to better-sqlite3 for demo/development without external DB
-        logger.log('Using better-sqlite3 in-memory database (demo mode)');
+        // Default: Use better-sqlite3 in-memory for maximum reliability
+        logger.log('Using better-sqlite3 in-memory database (demo mode - highly reliable)');
         return {
           type: 'better-sqlite3',
           database: ':memory:',
