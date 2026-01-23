@@ -53,7 +53,7 @@ interface AgentChatProps {
 }
 
 export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: AgentChatProps) {
-  const { wallet, isAuthenticated, isSimulation } = useWallet()
+  const { wallet, isAuthenticated, isSimulation, refreshWallet } = useWallet()
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -391,6 +391,8 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     } finally {
       setIsTyping(false)
       setIsDemoRunning(false)
+      // Refresh wallet to show updated balance after demo
+      setTimeout(() => refreshWallet(), 1000)
     }
   }, [
     addAgentMessage,
@@ -399,6 +401,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     isAuthenticated,
     onMoodChange,
     onSpeakingChange,
+    refreshWallet,
     wallet?.address,
     wallet?.balance,
     setStepStatus,
@@ -493,9 +496,11 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
 
       setMessages(prev => [...prev, agentMessage])
       
-      // If a decision was made, show success
+      // If a decision was made, show success and refresh wallet
       if (result.decisionId) {
         toast.success('Awesome — your request is in motion. BFT verification is underway.')
+        // Refresh wallet to show updated balance after transaction
+        setTimeout(() => refreshWallet(), 2000)
       }
     } catch (error: any) {
       console.error('Agent request failed:', error)

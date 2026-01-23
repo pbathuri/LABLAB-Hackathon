@@ -318,13 +318,14 @@ class ApiService {
     riskTolerance?: number
   }): Promise<{ decisionId: string; explanation: string }> {
     try {
-      // Backend expects portfolioState, marketData, riskTolerance
+      // Backend expects instruction, portfolioState, marketData, riskTolerance
       // Use longer timeout for AI decisions as they involve multiple steps
       const result = await this.request<{ id: string; explanation?: string; reasoning?: string }>(
         '/agent/decide',
         {
           method: 'POST',
           body: JSON.stringify({
+            instruction: params.instruction, // IMPORTANT: Send user's instruction
             portfolioState: params.portfolioState || { USDC: 1000 },
             marketData: params.marketData || {},
             riskTolerance: params.riskTolerance || 0.5,

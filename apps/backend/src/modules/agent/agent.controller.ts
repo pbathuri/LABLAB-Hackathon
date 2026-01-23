@@ -17,6 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AgentService, AgentContext } from './agent.service';
 
 class MakeDecisionDto {
+  instruction?: string; // User's natural language instruction
   portfolioState: Record<string, number>;
   marketData?: Record<string, any>;
   riskTolerance?: number;
@@ -35,6 +36,7 @@ export class AgentController {
   async makeDecision(@Request() req: any, @Body() dto: MakeDecisionDto) {
     const context: AgentContext = {
       userId: req.user.id,
+      instruction: dto.instruction || 'Optimize portfolio based on current market conditions',
       portfolioState: dto.portfolioState || { USDC: 1000, BTC: 0.01, ETH: 0.5 },
       marketData: dto.marketData || {},
       riskTolerance: dto.riskTolerance || 0.5,

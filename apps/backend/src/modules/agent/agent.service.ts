@@ -13,6 +13,7 @@ import { PolicyService } from '../policy/policy.service';
 
 export interface AgentContext {
   userId: string;
+  instruction: string; // User's natural language instruction
   portfolioState: Record<string, number>;
   marketData: Record<string, any>;
   riskTolerance: number;
@@ -43,9 +44,9 @@ export class AgentService {
       context.riskTolerance,
     );
 
-    // Step 2: Get AI trading decision
+    // Step 2: Get AI trading decision using user's instruction
     const aiDecision = await this.geminiService.processInstruction(
-      `Optimize portfolio for user with risk tolerance ${context.riskTolerance}`,
+      context.instruction,
       {
         portfolio: context.portfolioState,
         policy: { riskTolerance: context.riskTolerance },

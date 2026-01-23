@@ -132,7 +132,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               />
             </div>
             {!collapsed && (
-              <motion.span 
+              <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="font-display text-lg font-bold gradient-text whitespace-nowrap"
@@ -150,15 +150,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link key={item.href} href={item.href}>
                   <motion.div
                     whileHover={{ x: 4 }}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl mb-1 transition-colors ${
-                      isActive 
-                        ? 'bg-primary/20 text-primary border border-primary/30' 
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl mb-1 transition-colors ${isActive
+                        ? 'bg-primary/20 text-primary border border-primary/30'
                         : 'hover:bg-white/5 text-muted-foreground hover:text-white'
-                    }`}
+                      }`}
                   >
                     <item.icon className="w-5 h-5 flex-shrink-0" />
                     {!collapsed && (
-                      <motion.span 
+                      <motion.span
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="whitespace-nowrap"
@@ -232,7 +231,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </motion.aside>
 
       {/* Main Content */}
-      <main 
+      <main
         className="flex-1 transition-all duration-300"
         style={{ marginLeft: collapsed ? 80 : 260 }}
       >
@@ -246,10 +245,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 placeholder="Search transactions, assets..."
                 className="w-80 px-4 py-2 pl-10 rounded-xl bg-dark-100 border border-white/10 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
               />
-              <svg 
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -260,13 +259,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center gap-4">
               <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-full bg-dark-100 border border-white/10 text-xs">
                 <span
-                  className={`w-2 h-2 rounded-full ${
-                    backendStatus === 'online'
+                  className={`w-2 h-2 rounded-full ${backendStatus === 'online'
                       ? 'bg-green-400'
                       : backendStatus === 'offline'
                         ? 'bg-red-400'
                         : 'bg-yellow-400 animate-pulse'
-                  }`}
+                    }`}
                 />
                 <span className="text-muted-foreground">Backend</span>
                 <span className="font-medium text-white">
@@ -326,14 +324,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </span>
                   )}
                 </div>
-                <button 
+                <button
                   onClick={() => setShowDemoPanel(false)}
                   className="text-xs text-muted-foreground hover:text-white"
                 >
                   Hide
                 </button>
               </div>
-              
+
               <div className="flex items-center gap-6 text-xs">
                 {/* Wallet Status */}
                 <div className="flex items-center gap-2">
