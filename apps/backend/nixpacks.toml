@@ -3,14 +3,12 @@ nixPkgs = ["nodejs_20", "npm", "gcc", "gnumake", "python3"]
 
 [phases.install]
 cmds = [
-  "npm install --production=false --ignore-scripts",
-  "npm rebuild argon2"
+  "npm ci"
 ]
 
 [phases.build]
 cmds = [
-  "npx nest build",
-  "ls -la dist/ || echo 'dist folder not created'"
+  "npm run build"
 ]
 
 [start]
