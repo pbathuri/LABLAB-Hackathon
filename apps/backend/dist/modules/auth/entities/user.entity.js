@@ -36,11 +36,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "walletAddress", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: UserRole,
-        default: UserRole.USER,
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 20, default: UserRole.USER }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([
@@ -48,7 +44,7 @@ __decorate([
     __metadata("design:type", Boolean)
 ], User.prototype, "isActive", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'simple-json', nullable: true }),
     __metadata("design:type", Object)
 ], User.prototype, "preferences", void 0);
 __decorate([

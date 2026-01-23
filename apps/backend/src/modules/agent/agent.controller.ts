@@ -14,12 +14,24 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { IsOptional, IsNumber, IsObject, IsString } from 'class-validator';
 import { AgentService, AgentContext } from './agent.service';
 
 class MakeDecisionDto {
+  @IsOptional()
+  @IsString()
   instruction?: string; // User's natural language instruction
-  portfolioState: Record<string, number>;
+
+  @IsOptional()
+  @IsObject()
+  portfolioState?: Record<string, number>;
+
+  @IsOptional()
+  @IsObject()
   marketData?: Record<string, any>;
+
+  @IsOptional()
+  @IsNumber()
   riskTolerance?: number;
 }
 
@@ -28,7 +40,7 @@ class MakeDecisionDto {
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 export class AgentController {
-  constructor(private readonly agentService: AgentService) {}
+  constructor(private readonly agentService: AgentService) { }
 
   @Post('decide')
   @ApiOperation({ summary: 'Request AI agent to make a trading decision' })

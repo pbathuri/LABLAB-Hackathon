@@ -17,7 +17,7 @@ export class Wallet {
   @Column({ unique: true })
   address: string;
 
-  @Column({ type: 'jsonb', default: {} })
+  @Column({ type: 'simple-json', default: '{}' })
   balances: Record<string, string>; // Asset -> Balance (as string for precision)
 
   @Column({ default: 'arc-testnet' })

@@ -51,7 +51,7 @@ __decorate([
     __metadata("design:type", Number)
 ], VerificationLog.prototype, "consensusLatencyMs", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb' }),
+    (0, typeorm_1.Column)({ type: 'simple-json' }),
     __metadata("design:type", String)
 ], VerificationLog.prototype, "signatures", void 0);
 __decorate([

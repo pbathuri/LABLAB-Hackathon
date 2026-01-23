@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
 } from 'typeorm';
 
 export enum UserRole {
@@ -26,17 +25,13 @@ export class User {
   @Column({ nullable: true })
   walletAddress: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.USER,
-  })
+  @Column({ type: 'varchar', length: 20, default: UserRole.USER })
   role: UserRole;
 
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   preferences: {
     riskTolerance: number;
     notifications: boolean;

@@ -16,11 +16,32 @@ exports.QuantumController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const passport_1 = require("@nestjs/passport");
+const class_validator_1 = require("class-validator");
 const quantum_service_1 = require("./quantum.service");
 const qrng_service_1 = require("./services/qrng.service");
 const post_quantum_crypto_service_1 = require("./services/post-quantum-crypto.service");
 class OptimizePortfolioDto {
 }
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsObject)(),
+    __metadata("design:type", Object)
+], OptimizePortfolioDto.prototype, "holdings", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], OptimizePortfolioDto.prototype, "riskTolerance", void 0);
+class SignMessageDto {
+}
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SignMessageDto.prototype, "message", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SignMessageDto.prototype, "secretKey", void 0);
 let QuantumController = class QuantumController {
     constructor(quantumService, qrngService, postQuantumCrypto) {
         this.quantumService = quantumService;
@@ -28,7 +49,7 @@ let QuantumController = class QuantumController {
         this.postQuantumCrypto = postQuantumCrypto;
     }
     async optimizePortfolio(dto) {
-        return this.quantumService.optimizePortfolio(dto.holdings, dto.riskTolerance || 0.5);
+        return this.quantumService.optimizePortfolio(dto.holdings || { USDC: 600, ETH: 300, ARC: 100 }, dto.riskTolerance || 0.5);
     }
     async getRandomNumbers() {
         const numbers = await this.qrngService.generateRandomNumbers(10);
@@ -49,8 +70,8 @@ let QuantumController = class QuantumController {
             warning: 'This is a simulation. Do not use for production cryptography.',
         };
     }
-    async signMessage(body) {
-        const signature = await this.postQuantumCrypto.sign(body.message, body.secretKey);
+    async signMessage(dto) {
+        const signature = await this.postQuantumCrypto.sign(dto.message, dto.secretKey);
         return signature;
     }
 };
@@ -90,7 +111,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Signature generated' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [SignMessageDto]),
     __metadata("design:returntype", Promise)
 ], QuantumController.prototype, "signMessage", null);
 exports.QuantumController = QuantumController = __decorate([

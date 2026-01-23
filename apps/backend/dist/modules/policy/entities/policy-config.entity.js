@@ -43,7 +43,7 @@ __decorate([
     __metadata("design:type", Number)
 ], PolicyConfig.prototype, "cooldownPeriodSeconds", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'datetime', nullable: true }),
     __metadata("design:type", Date)
 ], PolicyConfig.prototype, "lastTradeTimestamp", void 0);
 __decorate([
@@ -51,7 +51,7 @@ __decorate([
     __metadata("design:type", String)
 ], PolicyConfig.prototype, "maxPriceDeviationPercent", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', default: [] }),
+    (0, typeorm_1.Column)({ type: 'simple-json', default: '[]' }),
     __metadata("design:type", Array)
 ], PolicyConfig.prototype, "allowedAddresses", void 0);
 __decorate([

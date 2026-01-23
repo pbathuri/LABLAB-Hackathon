@@ -195,12 +195,12 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
         prev.map((step) =>
           step.key === key
             ? {
-                ...step,
-                status,
-                detail: detail ?? step.detail,
-                startedAt: status === 'running' ? now : step.startedAt,
-                endedAt: ['done', 'simulated', 'error'].includes(status) ? now : step.endedAt,
-              }
+              ...step,
+              status,
+              detail: detail ?? step.detail,
+              startedAt: status === 'running' ? now : step.startedAt,
+              endedAt: ['done', 'simulated', 'error'].includes(status) ? now : step.endedAt,
+            }
             : step,
         ),
       )
@@ -222,9 +222,9 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
         if (result) {
           hasAuth = true
         }
-      } catch {}
+      } catch { }
     }
-    
+
     const isSimulationMode = !hasAuth
 
     const initialTimeline: DemoStep[] = [
@@ -353,11 +353,11 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       const decisionId = isSimulationMode
         ? `demo-decision-${Date.now()}`
         : (await api.makeAgentDecision({
-            instruction: decisionPrompt,
-            portfolioState: wallet?.balance || { USDC: 1000 },
-            marketData: {},
-            riskTolerance: 0.4,
-          })).decisionId
+          instruction: decisionPrompt,
+          portfolioState: wallet?.balance || { USDC: 1000 },
+          marketData: {},
+          riskTolerance: 0.4,
+        })).decisionId
 
       setStepStatus(
         'agent',
@@ -493,7 +493,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       }
 
       setMessages(prev => [...prev, agentMessage])
-      
+
       // If a decision was made, show success and refresh wallet
       if (result.decisionId) {
         toast.success('Awesome — your request is in motion. BFT verification is underway.')
@@ -516,7 +516,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       setIsTyping(false)
       onMoodChange?.('happy')
       onSpeakingChange?.(true)
-      
+
       // Stop speaking animation after a bit
       setTimeout(() => onSpeakingChange?.(false), 2000)
     }
@@ -552,11 +552,10 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
         <div className="text-xs text-muted-foreground">
           Mode:{' '}
           <span
-            className={`ml-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs ${
-              currentMode
-                ? 'bg-green-500/20 text-green-300'
-                : 'bg-yellow-500/20 text-yellow-300'
-            }`}
+            className={`ml-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs ${currentMode
+              ? 'bg-green-500/20 text-green-300'
+              : 'bg-yellow-500/20 text-yellow-300'
+              }`}
           >
             {currentMode ? 'Live mode' : 'Simulation mode'}
           </span>
@@ -733,11 +732,10 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${
-                  message.role === 'user'
-                    ? 'bg-primary text-white rounded-br-md'
-                    : 'bg-dark-100 rounded-bl-md'
-                }`}
+                className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${message.role === 'user'
+                  ? 'bg-primary text-white rounded-br-md'
+                  : 'bg-dark-100 rounded-bl-md'
+                  }`}
               >
                 {message.content}
               </div>

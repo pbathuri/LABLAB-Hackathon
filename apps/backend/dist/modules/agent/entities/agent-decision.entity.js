@@ -40,22 +40,15 @@ __decorate([
     __metadata("design:type", String)
 ], AgentDecision.prototype, "userId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: DecisionType,
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50 }),
     __metadata("design:type", String)
 ], AgentDecision.prototype, "type", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: DecisionStatus,
-        default: DecisionStatus.PENDING,
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, default: DecisionStatus.PENDING }),
     __metadata("design:type", String)
 ], AgentDecision.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb' }),
+    (0, typeorm_1.Column)({ type: 'simple-json' }),
     __metadata("design:type", Object)
 ], AgentDecision.prototype, "parameters", void 0);
 __decorate([
@@ -63,11 +56,11 @@ __decorate([
     __metadata("design:type", String)
 ], AgentDecision.prototype, "reasoning", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'simple-json', nullable: true }),
     __metadata("design:type", Object)
 ], AgentDecision.prototype, "quantumAnalysis", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'simple-json', nullable: true }),
     __metadata("design:type", Object)
 ], AgentDecision.prototype, "verificationResult", void 0);
 __decorate([

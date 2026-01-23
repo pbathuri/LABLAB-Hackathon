@@ -1,7 +1,7 @@
 import { AgentService } from './agent.service';
 declare class MakeDecisionDto {
     instruction?: string;
-    portfolioState: Record<string, number>;
+    portfolioState?: Record<string, number>;
     marketData?: Record<string, any>;
     riskTolerance?: number;
 }

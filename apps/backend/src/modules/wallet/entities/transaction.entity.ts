@@ -27,17 +27,10 @@ export class Transaction {
   @Column()
   walletId: string;
 
-  @Column({
-    type: 'enum',
-    enum: TransactionType,
-  })
+  @Column({ type: 'varchar', length: 50 })
   type: TransactionType;
 
-  @Column({
-    type: 'enum',
-    enum: TransactionStatus,
-    default: TransactionStatus.PENDING,
-  })
+  @Column({ type: 'varchar', length: 50, default: TransactionStatus.PENDING })
   status: TransactionStatus;
 
   @Column()
@@ -58,7 +51,7 @@ export class Transaction {
   @Column({ nullable: true })
   blockNumber: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   metadata: Record<string, any>;
 
   @CreateDateColumn()

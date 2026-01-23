@@ -34,7 +34,7 @@ export class VerificationLog {
   @Column()
   consensusLatencyMs: number;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'simple-json' })
   signatures: string;
 
   @Column({ nullable: true })

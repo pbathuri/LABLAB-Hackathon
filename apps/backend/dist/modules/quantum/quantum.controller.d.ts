@@ -2,8 +2,12 @@ import { QuantumService } from './quantum.service';
 import { QRNGService } from './services/qrng.service';
 import { PostQuantumCryptoService } from './services/post-quantum-crypto.service';
 declare class OptimizePortfolioDto {
-    holdings: Record<string, number>;
+    holdings?: Record<string, number>;
     riskTolerance?: number;
+}
+declare class SignMessageDto {
+    message: string;
+    secretKey: string;
 }
 export declare class QuantumController {
     private readonly quantumService;
@@ -22,9 +26,6 @@ export declare class QuantumController {
         algorithm: string;
         warning: string;
     }>;
-    signMessage(body: {
-        message: string;
-        secretKey: string;
-    }): Promise<import("./services/post-quantum-crypto.service").Signature>;
+    signMessage(dto: SignMessageDto): Promise<import("./services/post-quantum-crypto.service").Signature>;
 }
 export {};

@@ -42,7 +42,7 @@ export default function VerificationPage() {
         // Stable default: 9 signatures (consensus reached)
         return 9
     }, [verifierStatus?.signedCount])
-    
+
     const consensusReached = signedCount >= requiredSignatures
 
     // Memoize verifiers to prevent re-generation on each render
@@ -110,8 +110,8 @@ export default function VerificationPage() {
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-semibold">Latest Consensus Status</h2>
                             <span className={`px-3 py-1 rounded-full text-sm ${consensusReached
-                                    ? 'bg-green-500/20 text-green-400'
-                                    : 'bg-yellow-500/20 text-yellow-400'
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-yellow-500/20 text-yellow-400'
                                 }`}>
                                 {signedCount}/{totalNodes} Signatures
                             </span>
@@ -134,8 +134,8 @@ export default function VerificationPage() {
                             <div className="h-2 bg-dark-100 rounded-full overflow-hidden mt-4">
                                 <motion.div
                                     className={`h-full rounded-full ${consensusReached
-                                            ? 'bg-gradient-to-r from-accent to-primary'
-                                            : 'bg-yellow-400'
+                                        ? 'bg-gradient-to-r from-accent to-primary'
+                                        : 'bg-yellow-400'
                                         }`}
                                     initial={{ width: 0 }}
                                     animate={{ width: `${(signedCount / totalNodes) * 100}%` }}
@@ -182,8 +182,8 @@ export default function VerificationPage() {
                                                 </a>
                                             )}
                                             <span className={`px-2 py-1 rounded-full text-xs ${verification.status === 'verified' ? 'bg-green-500/20 text-green-400' :
-                                                    verification.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                                                        'bg-yellow-500/20 text-yellow-400'
+                                                verification.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                                                    'bg-yellow-500/20 text-yellow-400'
                                                 }`}>
                                                 {verification.status}
                                             </span>
@@ -225,8 +225,8 @@ export default function VerificationPage() {
                                         </div>
                                         <span
                                             className={`px-3 py-1 rounded-full text-xs ${isSigned
-                                                    ? 'bg-green-500/20 text-green-400'
-                                                    : 'bg-muted-foreground/20 text-muted-foreground'
+                                                ? 'bg-green-500/20 text-green-400'
+                                                : 'bg-muted-foreground/20 text-muted-foreground'
                                                 }`}
                                         >
                                             {isSigned ? 'Signed' : 'Pending'}

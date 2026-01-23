@@ -25,17 +25,13 @@ export class CircleWallet {
   @Column()
   address: string;
 
-  @Column({
-    type: 'enum',
-    enum: CircleWalletType,
-    default: CircleWalletType.DEV_CONTROLLED,
-  })
+  @Column({ type: 'varchar', length: 50, default: CircleWalletType.DEV_CONTROLLED })
   type: CircleWalletType;
 
   @Column({ default: 'active' })
   status: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   metadata: {
     label?: string;
     balances?: {

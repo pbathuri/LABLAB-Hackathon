@@ -17,14 +17,14 @@ export function VerificationStatus() {
   const totalNodes = verifierStatus?.totalNodes || 11
   const requiredSignatures = verifierStatus?.requiredSignatures || 7
   const nodes = verifierStatus?.nodes || []
-  
+
   // Use stable signed count from API or fallback (no Math.random to prevent re-renders)
   const signedCount = useMemo(() => {
     return verifierStatus?.signedCount || 9
   }, [verifierStatus?.signedCount])
-  
+
   const consensusReached = signedCount >= requiredSignatures
-  const avgLatency = nodes.length > 0 
+  const avgLatency = nodes.length > 0
     ? Math.round(nodes.reduce((sum, n) => sum + (n.avgLatencyMs || 0), 0) / nodes.length)
     : 49
 
@@ -39,9 +39,8 @@ export function VerificationStatus() {
           </div>
         </div>
 
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl ${
-          consensusReached ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
-        }`}>
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl ${consensusReached ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+          }`}>
           {consensusReached ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
           <span className="text-sm font-medium">
             {consensusReached ? 'Consensus Reached' : 'Awaiting Signatures'}
@@ -80,11 +79,10 @@ export function VerificationStatus() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: index * 0.05 }}
-              className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer transition-transform hover:scale-110 ${
-                isSigned
-                  ? 'bg-green-500/30 text-green-400 border border-green-500/50' 
+              className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer transition-transform hover:scale-110 ${isSigned
+                  ? 'bg-green-500/30 text-green-400 border border-green-500/50'
                   : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-              }`}
+                }`}
               title={address}
             >
               {isSigned ? '✓' : '...'}
@@ -97,7 +95,7 @@ export function VerificationStatus() {
       <div className="p-4 rounded-xl bg-dark-100/50">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm text-muted-foreground">Network Status</span>
-          <button 
+          <button
             onClick={() => refetch()}
             disabled={isLoading}
             className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -106,7 +104,7 @@ export function VerificationStatus() {
             Refresh
           </button>
         </div>
-        
+
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
             <div className="text-muted-foreground text-xs mb-1">Active Nodes</div>

@@ -36,11 +36,7 @@ __decorate([
     __metadata("design:type", String)
 ], CircleWallet.prototype, "address", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: CircleWalletType,
-        default: CircleWalletType.DEV_CONTROLLED,
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, default: CircleWalletType.DEV_CONTROLLED }),
     __metadata("design:type", String)
 ], CircleWallet.prototype, "type", void 0);
 __decorate([
@@ -48,7 +44,7 @@ __decorate([
     __metadata("design:type", String)
 ], CircleWallet.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'simple-json', nullable: true }),
     __metadata("design:type", Object)
 ], CircleWallet.prototype, "metadata", void 0);
 __decorate([

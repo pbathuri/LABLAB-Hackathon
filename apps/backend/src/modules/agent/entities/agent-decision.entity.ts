@@ -31,20 +31,13 @@ export class AgentDecision {
   @Column()
   userId: string;
 
-  @Column({
-    type: 'enum',
-    enum: DecisionType,
-  })
+  @Column({ type: 'varchar', length: 50 })
   type: DecisionType;
 
-  @Column({
-    type: 'enum',
-    enum: DecisionStatus,
-    default: DecisionStatus.PENDING,
-  })
+  @Column({ type: 'varchar', length: 50, default: DecisionStatus.PENDING })
   status: DecisionStatus;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'simple-json' })
   parameters: {
     asset?: string;
     quantity?: number;
@@ -57,7 +50,7 @@ export class AgentDecision {
   @Column({ type: 'text' })
   reasoning: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   quantumAnalysis: {
     optimizedWeights: Record<string, number>;
     expectedReturn: number;
@@ -67,7 +60,7 @@ export class AgentDecision {
     };
   };
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   verificationResult: {
     totalSignatures: number;
     requiredSignatures: number;

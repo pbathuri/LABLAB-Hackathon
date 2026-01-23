@@ -10,6 +10,8 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
+const app_controller_1 = require("./app.controller");
+const app_service_1 = require("./app.service");
 const agent_module_1 = require("./modules/agent/agent.module");
 const wallet_module_1 = require("./modules/wallet/wallet.module");
 const quantum_module_1 = require("./modules/quantum/quantum.module");
@@ -49,9 +51,9 @@ exports.AppModule = AppModule = __decorate([
                             ssl: { rejectUnauthorized: false },
                         };
                     }
-                    logger.log('Using SQLite in-memory database (demo mode)');
+                    logger.log('Using better-sqlite3 in-memory database (demo mode)');
                     return {
-                        type: 'sqlite',
+                        type: 'better-sqlite3',
                         database: ':memory:',
                         entities: [__dirname + '/**/*.entity{.ts,.js}'],
                         synchronize: true,
@@ -70,6 +72,8 @@ exports.AppModule = AppModule = __decorate([
             reliability_module_1.ReliabilityModule,
             circle_module_1.CircleModule,
         ],
+        controllers: [app_controller_1.AppController],
+        providers: [app_service_1.AppService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

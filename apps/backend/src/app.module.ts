@@ -2,6 +2,10 @@ import { Module, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+// App controller and service
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
 // Feature modules
 import { AgentModule } from './modules/agent/agent.module';
 import { WalletModule } from './modules/wallet/wallet.module';
@@ -47,10 +51,10 @@ const logger = new Logger('AppModule');
           };
         }
         
-        // Fallback to SQLite for demo/development without external DB
-        logger.log('Using SQLite in-memory database (demo mode)');
+        // Fallback to better-sqlite3 for demo/development without external DB
+        logger.log('Using better-sqlite3 in-memory database (demo mode)');
         return {
-          type: 'sqlite',
+          type: 'better-sqlite3',
           database: ':memory:',
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: true,
@@ -71,5 +75,7 @@ const logger = new Logger('AppModule');
     ReliabilityModule,
     CircleModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

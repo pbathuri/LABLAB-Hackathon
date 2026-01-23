@@ -46,18 +46,10 @@ export class PaymentRequest {
   @Column({ type: 'bigint' })
   expiry: number;
 
-  @Column({
-    type: 'enum',
-    enum: PaymentStatus,
-    default: PaymentStatus.PENDING,
-  })
+  @Column({ type: 'varchar', length: 50, default: PaymentStatus.PENDING })
   status: PaymentStatus;
 
-  @Column({
-    type: 'enum',
-    enum: PaymentModel,
-    default: PaymentModel.PAY_PER_CALL,
-  })
+  @Column({ type: 'varchar', length: 50, default: PaymentModel.PAY_PER_CALL })
   model: PaymentModel;
 
   @Column({ nullable: true })
@@ -72,7 +64,7 @@ export class PaymentRequest {
   @Column({ type: 'text', nullable: true })
   eip712TypedData: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   metadata: {
     description?: string;
     callResult?: any;

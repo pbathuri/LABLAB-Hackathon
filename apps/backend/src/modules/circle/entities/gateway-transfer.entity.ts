@@ -38,17 +38,13 @@ export class GatewayTransfer {
   @Column({ nullable: true })
   toAddress: string;
 
-  @Column({
-    type: 'enum',
-    enum: GatewayTransferStatus,
-    default: GatewayTransferStatus.PENDING,
-  })
+  @Column({ type: 'varchar', length: 50, default: GatewayTransferStatus.PENDING })
   status: GatewayTransferStatus;
 
   @Column({ nullable: true })
   txHash: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   metadata: {
     referenceId?: string;
     notes?: string;

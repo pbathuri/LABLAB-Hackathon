@@ -16,9 +16,30 @@ exports.AgentController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const passport_1 = require("@nestjs/passport");
+const class_validator_1 = require("class-validator");
 const agent_service_1 = require("./agent.service");
 class MakeDecisionDto {
 }
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], MakeDecisionDto.prototype, "instruction", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsObject)(),
+    __metadata("design:type", Object)
+], MakeDecisionDto.prototype, "portfolioState", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsObject)(),
+    __metadata("design:type", Object)
+], MakeDecisionDto.prototype, "marketData", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], MakeDecisionDto.prototype, "riskTolerance", void 0);
 let AgentController = class AgentController {
     constructor(agentService) {
         this.agentService = agentService;

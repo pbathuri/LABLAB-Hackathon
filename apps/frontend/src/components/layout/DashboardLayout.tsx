@@ -151,8 +151,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <motion.div
                     whileHover={{ x: 4 }}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl mb-1 transition-colors ${isActive
-                        ? 'bg-primary/20 text-primary border border-primary/30'
-                        : 'hover:bg-white/5 text-muted-foreground hover:text-white'
+                      ? 'bg-primary/20 text-primary border border-primary/30'
+                      : 'hover:bg-white/5 text-muted-foreground hover:text-white'
                       }`}
                   >
                     <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -260,10 +260,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-full bg-dark-100 border border-white/10 text-xs">
                 <span
                   className={`w-2 h-2 rounded-full ${backendStatus === 'online'
-                      ? 'bg-green-400'
-                      : backendStatus === 'offline'
-                        ? 'bg-red-400'
-                        : 'bg-yellow-400 animate-pulse'
+                    ? 'bg-green-400'
+                    : backendStatus === 'offline'
+                      ? 'bg-red-400'
+                      : 'bg-yellow-400 animate-pulse'
                     }`}
                 />
                 <span className="text-muted-foreground">Backend</span>

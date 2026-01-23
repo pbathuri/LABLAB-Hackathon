@@ -6,13 +6,27 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { IsOptional, IsNumber, IsObject, IsString } from 'class-validator';
 import { QuantumService } from './quantum.service';
 import { QRNGService } from './services/qrng.service';
 import { PostQuantumCryptoService } from './services/post-quantum-crypto.service';
 
 class OptimizePortfolioDto {
-  holdings: Record<string, number>;
+  @IsOptional()
+  @IsObject()
+  holdings?: Record<string, number>;
+
+  @IsOptional()
+  @IsNumber()
   riskTolerance?: number;
+}
+
+class SignMessageDto {
+  @IsString()
+  message: string;
+
+  @IsString()
+  secretKey: string;
 }
 
 @ApiTags('quantum')
@@ -29,7 +43,7 @@ export class QuantumController {
   @ApiResponse({ status: 200, description: 'Optimization result' })
   async optimizePortfolio(@Body() dto: OptimizePortfolioDto) {
     return this.quantumService.optimizePortfolio(
-      dto.holdings,
+      dto.holdings || { USDC: 600, ETH: 300, ARC: 100 },
       dto.riskTolerance || 0.5,
     );
   }
@@ -69,10 +83,10 @@ export class QuantumController {
   @Post('sign')
   @ApiOperation({ summary: 'Sign message with post-quantum signature' })
   @ApiResponse({ status: 200, description: 'Signature generated' })
-  async signMessage(@Body() body: { message: string; secretKey: string }) {
+  async signMessage(@Body() dto: SignMessageDto) {
     const signature = await this.postQuantumCrypto.sign(
-      body.message,
-      body.secretKey,
+      dto.message,
+      dto.secretKey,
     );
     return signature;
   }

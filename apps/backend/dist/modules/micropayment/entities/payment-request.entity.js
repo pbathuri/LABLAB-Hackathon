@@ -61,19 +61,11 @@ __decorate([
     __metadata("design:type", Number)
 ], PaymentRequest.prototype, "expiry", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: PaymentStatus,
-        default: PaymentStatus.PENDING,
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, default: PaymentStatus.PENDING }),
     __metadata("design:type", String)
 ], PaymentRequest.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: PaymentModel,
-        default: PaymentModel.PAY_PER_CALL,
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, default: PaymentModel.PAY_PER_CALL }),
     __metadata("design:type", String)
 ], PaymentRequest.prototype, "model", void 0);
 __decorate([
@@ -93,7 +85,7 @@ __decorate([
     __metadata("design:type", String)
 ], PaymentRequest.prototype, "eip712TypedData", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'simple-json', nullable: true }),
     __metadata("design:type", Object)
 ], PaymentRequest.prototype, "metadata", void 0);
 __decorate([

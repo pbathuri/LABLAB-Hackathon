@@ -53,11 +53,7 @@ __decorate([
     __metadata("design:type", String)
 ], GatewayTransfer.prototype, "toAddress", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        type: 'enum',
-        enum: GatewayTransferStatus,
-        default: GatewayTransferStatus.PENDING,
-    }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, default: GatewayTransferStatus.PENDING }),
     __metadata("design:type", String)
 ], GatewayTransfer.prototype, "status", void 0);
 __decorate([
@@ -65,7 +61,7 @@ __decorate([
     __metadata("design:type", String)
 ], GatewayTransfer.prototype, "txHash", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'simple-json', nullable: true }),
     __metadata("design:type", Object)
 ], GatewayTransfer.prototype, "metadata", void 0);
 __decorate([

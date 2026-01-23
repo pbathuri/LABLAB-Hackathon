@@ -35,7 +35,7 @@ export class PolicyConfig {
   cooldownPeriodSeconds: number;
 
   // Last trade timestamp
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   lastTradeTimestamp: Date;
 
   // Price deviation guard (percentage)
@@ -43,7 +43,7 @@ export class PolicyConfig {
   maxPriceDeviationPercent: string;
 
   // Allowed counterparty addresses (JSON array)
-  @Column({ type: 'jsonb', default: [] })
+  @Column({ type: 'simple-json', default: '[]' })
   allowedAddresses: string[];
 
   // Risk tolerance (0-1)
