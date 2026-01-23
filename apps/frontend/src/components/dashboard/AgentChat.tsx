@@ -11,6 +11,7 @@ import {
   Activity,
   BadgeDollarSign,
   Clock,
+  Trash2,
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { toast } from 'react-hot-toast'
@@ -52,23 +53,52 @@ interface AgentChatProps {
   onInsightsChange?: (insights: PromptInsights | null) => void
 }
 
+const CHAT_STORAGE_KEY = 'captain-whiskers-chat-history'
+
+const loadChatHistory = (): Message[] => {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(CHAT_STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
+    }
+  } catch { }
+  return []
+}
+
+const saveChatHistory = (messages: Message[]) => {
+  if (typeof window === 'undefined') return
+  try {
+    // Keep only last 50 messages to prevent localStorage bloat
+    const toSave = messages.slice(-50)
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave))
+  } catch { }
+}
+
 export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: AgentChatProps) {
   const { wallet, isAuthenticated, isSimulation, refreshWallet } = useWallet()
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'agent',
-      content:
-        "Hi! I'm Captain Whiskers — your friendly, quantum-powered treasury copilot. Tell me what you'd like to do, and I’ll surface clear, confident next steps.",
-      timestamp: new Date(),
-    },
-  ])
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const history = loadChatHistory()
+    if (history.length > 0) return history
+    return [
+      {
+        id: '1',
+        role: 'agent',
+        content:
+          "Hi! I'm Captain Whiskers — your friendly, quantum-powered treasury copilot. Tell me what you'd like to do, and I'll surface clear, confident next steps.",
+        timestamp: new Date(),
+      },
+    ]
+  })
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [isDemoRunning, setIsDemoRunning] = useState(false)
   const [runSeed, setRunSeed] = useState(0)
   const [demoTimeline, setDemoTimeline] = useState<DemoStep[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const shouldAutoScroll = useRef(true)
   const onInsightsChangeRef = useRef(onInsightsChange)
 
   useEffect(() => {
@@ -153,13 +183,38 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     }
   }, [input, insights])
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  // Save chat history when messages change
+  useEffect(() => {
+    saveChatHistory(messages)
+  }, [messages])
+
+  // Check if user is near bottom of chat to auto-scroll
+  const checkShouldAutoScroll = useCallback(() => {
+    const container = messagesContainerRef.current
+    if (!container) return true
+    const threshold = 100
+    return container.scrollHeight - container.scrollTop - container.clientHeight < threshold
+  }, [])
+
+  const scrollToBottom = useCallback((force = false) => {
+    if (!force && !shouldAutoScroll.current) return
+    // Use requestAnimationFrame to prevent layout thrashing
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    })
+  }, [])
+
+  // Handle scroll to detect if user scrolled up
+  const handleScroll = useCallback(() => {
+    shouldAutoScroll.current = checkShouldAutoScroll()
+  }, [checkShouldAutoScroll])
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    // Only auto-scroll if user hasn't scrolled up
+    if (shouldAutoScroll.current) {
+      scrollToBottom()
+    }
+  }, [messages, scrollToBottom])
 
   const addAgentMessage = useCallback((content: string) => {
     setMessages((prev) => [...prev, {
@@ -413,8 +468,23 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     start()
   }, [runSeed, runFullDemo])
 
+  const clearChatHistory = useCallback(() => {
+    const initialMessage: Message = {
+      id: '1',
+      role: 'agent',
+      content:
+        "Hi! I'm Captain Whiskers — your friendly, quantum-powered treasury copilot. Tell me what you'd like to do, and I'll surface clear, confident next steps.",
+      timestamp: new Date(),
+    }
+    setMessages([initialMessage])
+    localStorage.removeItem(CHAT_STORAGE_KEY)
+  }, [])
+
   const handleSend = async () => {
     if (!input.trim() || isDemoRunning) return
+
+    // Force scroll to bottom when user sends message
+    shouldAutoScroll.current = true
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -428,6 +498,9 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     setInput('')
     setIsTyping(true)
     onMoodChange?.('thinking')
+    
+    // Force scroll after adding user message
+    setTimeout(() => scrollToBottom(true), 50)
 
     if (userInput.trim().toLowerCase().includes('run full demo')) {
       await runFullDemo()
@@ -721,7 +794,11 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2 scrollbar-thin">
+      <div 
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2 scrollbar-thin"
+      >
         <AnimatePresence initial={false}>
           {messages.map((message) => (
             <motion.div
@@ -779,8 +856,19 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
           </button>
         </div>
 
-        <button className="p-3 rounded-xl bg-dark-100 hover:bg-dark-200 transition-colors">
+        <button 
+          className="p-3 rounded-xl bg-dark-100 hover:bg-dark-200 transition-colors"
+          title="Text-to-speech (coming soon)"
+        >
           <Volume2 className="w-4 h-4 text-muted-foreground" />
+        </button>
+
+        <button 
+          onClick={clearChatHistory}
+          className="p-3 rounded-xl bg-dark-100 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+          title="Clear chat history"
+        >
+          <Trash2 className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
     </div>

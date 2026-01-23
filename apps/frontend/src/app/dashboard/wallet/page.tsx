@@ -2,19 +2,58 @@
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { motion } from 'framer-motion'
-import { Wallet, Copy, ExternalLink, ArrowUpRight, ArrowDownLeft, CheckCircle2 } from 'lucide-react'
+import { Wallet, Copy, ExternalLink, ArrowUpRight, ArrowDownLeft, CheckCircle2, RefreshCw, History, TrendingUp } from 'lucide-react'
 import { useWallet } from '@/contexts/WalletContext'
 import { useAccount } from 'wagmi'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { SendTransactionModal } from '@/components/transactions/SendTransactionModal'
+import { api, Transaction, CircleWallet } from '@/lib/api'
 
 export default function WalletPage() {
-  const { wallet, isLoading, refreshWallet, connect, isConnected, isConnecting } = useWallet()
+  const { wallet, isLoading, refreshWallet, connect, isConnected, isConnecting, isAuthenticated } = useWallet()
   const { address } = useAccount()
   const [copied, setCopied] = useState(false)
   const [isSendModalOpen, setIsSendModalOpen] = useState(false)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [circleWallets, setCircleWallets] = useState<CircleWallet[]>([])
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [loadingTx, setLoadingTx] = useState(false)
 
   const walletAddress = wallet?.address || address || 'Not connected'
+
+  // Fetch transactions and Circle wallets
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isAuthenticated && !api.getStoredAuthToken()) return
+      
+      setLoadingTx(true)
+      try {
+        const [txs, wallets] = await Promise.all([
+          api.getTransactions(walletAddress, 10).catch(() => []),
+          api.listCircleWallets().catch(() => [])
+        ])
+        setTransactions(txs)
+        setCircleWallets(wallets)
+      } catch {
+        // Silent fail - use empty arrays
+      } finally {
+        setLoadingTx(false)
+      }
+    }
+    
+    fetchData()
+  }, [walletAddress, isAuthenticated])
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      await refreshWallet?.()
+      const txs = await api.getTransactions(walletAddress, 10).catch(() => [])
+      setTransactions(txs)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
   const arcScanUrl = walletAddress !== 'Not connected' 
     ? `https://testnet.arcscan.io/address/${walletAddress}`
     : '#'
@@ -88,18 +127,53 @@ export default function WalletPage() {
 
               {/* Balance Card */}
               <div className="card-quantum p-6">
-                <h2 className="text-lg font-semibold mb-4">Balance</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Balance</h2>
+                  <button
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    className="p-2 rounded-lg hover:bg-dark-100 transition-colors disabled:opacity-50"
+                    title="Refresh balance"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">USDC</span>
+                  <div className="flex items-center justify-between p-3 bg-dark-100 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#2775CA]/20 flex items-center justify-center">
+                        <span className="text-[#2775CA] font-bold text-sm">$</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">USDC</span>
+                        <div className="text-xs text-muted-foreground">USD Coin</div>
+                      </div>
+                    </div>
                     <span className="text-2xl font-bold font-mono">
                       {wallet?.balance?.USDC ? parseFloat(wallet.balance.USDC).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">ARC</span>
+                  <div className="flex items-center justify-between p-3 bg-dark-100 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#00D9FF]/20 flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5 text-[#00D9FF]" />
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">ARC</span>
+                        <div className="text-xs text-muted-foreground">Arc Token</div>
+                      </div>
+                    </div>
                     <span className="text-2xl font-bold font-mono">
                       {wallet?.balance?.ARC ? parseFloat(wallet.balance.ARC).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : '0.0000'}
+                    </span>
+                  </div>
+                </div>
+                {/* Total Value */}
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Total Value (est.)</span>
+                    <span className="text-lg font-semibold">
+                      ${(parseFloat(wallet?.balance?.USDC || '0') + parseFloat(wallet?.balance?.ARC || '0') * 0.1).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
@@ -167,6 +241,71 @@ export default function WalletPage() {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Recent Transactions */}
+              <div className="card-quantum p-6 lg:col-span-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <History className="w-5 h-5" />
+                    Recent Transactions
+                  </h2>
+                  <a href="/dashboard/history" className="text-sm text-primary hover:underline">
+                    View All →
+                  </a>
+                </div>
+                {loadingTx ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading transactions...</div>
+                ) : transactions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No transactions yet</p>
+                    <p className="text-sm text-muted-foreground mt-1">Your transaction history will appear here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {transactions.slice(0, 5).map((tx) => (
+                      <div
+                        key={tx.id}
+                        className="flex items-center justify-between p-3 bg-dark-100 rounded-xl hover:bg-dark-100/80 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            tx.type === 'send' || tx.type === 'swap' ? 'bg-red-500/20' : 'bg-green-500/20'
+                          }`}>
+                            {tx.type === 'send' || tx.type === 'swap' ? (
+                              <ArrowUpRight className={`w-5 h-5 ${tx.type === 'send' ? 'text-red-400' : 'text-yellow-400'}`} />
+                            ) : (
+                              <ArrowDownLeft className="w-5 h-5 text-green-400" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium capitalize">{tx.type}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(tx.timestamp).toLocaleDateString()} · {tx.status}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`font-mono font-medium ${
+                            tx.type === 'send' ? 'text-red-400' : tx.type === 'receive' ? 'text-green-400' : ''
+                          }`}>
+                            {tx.type === 'send' ? '-' : tx.type === 'receive' ? '+' : ''}{tx.amount} {tx.token}
+                          </div>
+                          {tx.hash && (
+                            <a
+                              href={`https://testnet.arcscan.io/tx/${tx.hash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline"
+                            >
+                              {tx.hash.slice(0, 8)}...
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
