@@ -4,10 +4,11 @@ node_modules
 .pnp.js
 
 # Build outputs
-dist
 .next
 out
 build
+# Allow dist in apps/backend for Railway deployment
+!apps/backend/dist
 
 # Testing
 coverage
