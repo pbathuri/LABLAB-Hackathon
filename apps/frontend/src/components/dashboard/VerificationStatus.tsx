@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Shield, Check, Clock, RefreshCw } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
@@ -9,15 +10,19 @@ export function VerificationStatus() {
   const { data: verifierStatus, refetch, isLoading } = useQuery({
     queryKey: ['verifier-status-summary'],
     queryFn: () => api.getVerifierStatus(),
-    refetchInterval: 15000, // Refresh every 15 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds (reduced)
+    staleTime: 25000,
   })
 
   const totalNodes = verifierStatus?.totalNodes || 11
   const requiredSignatures = verifierStatus?.requiredSignatures || 7
   const nodes = verifierStatus?.nodes || []
   
-  // Simulate realistic signed count based on reliability
-  const signedCount = Math.min(totalNodes, Math.floor(Math.random() * 3) + 8)
+  // Use stable signed count from API or fallback (no Math.random to prevent re-renders)
+  const signedCount = useMemo(() => {
+    return verifierStatus?.signedCount || 9
+  }, [verifierStatus?.signedCount])
+  
   const consensusReached = signedCount >= requiredSignatures
   const avgLatency = nodes.length > 0 
     ? Math.round(nodes.reduce((sum, n) => sum + (n.avgLatencyMs || 0), 0) / nodes.length)
@@ -48,7 +53,7 @@ export function VerificationStatus() {
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm mb-2">
           <span>Signatures collected</span>
-          <span className="font-mono">{signedCount} / {requiredSignatures} required</span>
+          <span className="font-mono">{signedCount}/{totalNodes} <span className="text-muted-foreground">({requiredSignatures} required)</span></span>
         </div>
         <div className="h-2 bg-dark-100 rounded-full overflow-hidden">
           <motion.div

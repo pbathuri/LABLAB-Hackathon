@@ -227,11 +227,11 @@ class ApiService {
         method: 'POST',
         body: JSON.stringify({ holdings, riskTolerance: riskTolerance || 0.5 }),
       })
-      
+
       // Convert backend response to portfolio assets
       const weights = result.weights || {}
       const total = Object.values(weights).reduce((sum: number, w: any) => sum + (w as number), 0) as number
-      
+
       return Object.entries(weights).map(([symbol, weight]) => ({
         symbol,
         name: symbol,
@@ -273,7 +273,7 @@ class ApiService {
       // If direct settlement fails (no auth or other error), use agent decision
       // For demo purposes, we'll create a mock response
       console.warn('Direct settlement failed, using agent decision flow:', error)
-      
+
       // Return a mock decision ID for demo
       const decisionId = `decision_${Date.now()}`
       return {
@@ -335,7 +335,7 @@ class ApiService {
         },
         30000, // 30 second timeout for AI decisions
       )
-      
+
       return {
         decisionId: result.id,
         explanation: result.explanation || result.reasoning || "I've processed your request. The transaction is being verified by our BFT consensus layer.",
@@ -343,19 +343,19 @@ class ApiService {
     } catch (error: any) {
       // For demo purposes, return a mock response if backend is unavailable
       console.warn('Agent decision failed, using mock response:', error)
-      
+
       // Generate a realistic mock response
       const mockId = `decision_${Date.now()}`
       const action = params.instruction.toLowerCase().includes('send') ? 'transfer' :
-                     params.instruction.toLowerCase().includes('optimize') ? 'rebalance' : 'analysis'
-      
+        params.instruction.toLowerCase().includes('optimize') ? 'rebalance' : 'analysis'
+
       return {
         decisionId: mockId,
-        explanation: action === 'transfer' 
+        explanation: action === 'transfer'
           ? `I've queued your transfer request (${mockId}). It's being verified by 11 BFT nodes - 7 signatures required for consensus.`
           : action === 'rebalance'
-          ? `Portfolio optimization complete (${mockId}). VQE algorithm suggests: 45% USDC, 35% ETH, 20% ARC for optimal risk-adjusted returns.`
-          : `I've analyzed your request (${mockId}). This action is being processed through our quantum-secured pipeline.`,
+            ? `Portfolio optimization complete (${mockId}). VQE algorithm suggests: 45% USDC, 35% ETH, 20% ARC for optimal risk-adjusted returns.`
+            : `I've analyzed your request (${mockId}). This action is being processed through our quantum-secured pipeline.`,
       }
     }
   }
@@ -460,7 +460,7 @@ class ApiService {
   }
 
   // ============ Authentication Methods ============
-  
+
   async register(dto: RegisterDto): Promise<AuthResponse> {
     const response = await this.request<AuthResponse>('/auth/register', {
       method: 'POST',
@@ -490,7 +490,7 @@ class ApiService {
   async autoLoginDemo(walletAddress?: string): Promise<AuthResponse | null> {
     const demoEmail = `demo-${walletAddress?.slice(2, 10) || 'user'}@captainwhiskers.demo`
     const demoPassword = 'CaptainWhiskers2026!Demo'
-    
+
     try {
       // Try to register first
       const result = await this.register({
