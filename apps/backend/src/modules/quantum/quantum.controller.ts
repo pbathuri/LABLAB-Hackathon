@@ -17,8 +17,6 @@ class OptimizePortfolioDto {
 
 @ApiTags('quantum')
 @Controller('quantum')
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
 export class QuantumController {
   constructor(
     private readonly quantumService: QuantumService,
@@ -27,7 +25,7 @@ export class QuantumController {
   ) {}
 
   @Post('optimize')
-  @ApiOperation({ summary: 'Optimize portfolio using VQE algorithm' })
+  @ApiOperation({ summary: 'Optimize portfolio using VQE algorithm (public)' })
   @ApiResponse({ status: 200, description: 'Optimization result' })
   async optimizePortfolio(@Body() dto: OptimizePortfolioDto) {
     return this.quantumService.optimizePortfolio(
@@ -37,7 +35,7 @@ export class QuantumController {
   }
 
   @Get('random')
-  @ApiOperation({ summary: 'Generate quantum random numbers' })
+  @ApiOperation({ summary: 'Generate quantum random numbers (public)' })
   @ApiResponse({ status: 200, description: 'Random numbers generated' })
   async getRandomNumbers() {
     const numbers = await this.qrngService.generateRandomNumbers(10);
@@ -52,6 +50,8 @@ export class QuantumController {
     };
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Post('keypair')
   @ApiOperation({ summary: 'Generate post-quantum key pair' })
   @ApiResponse({ status: 201, description: 'Key pair generated' })
@@ -64,6 +64,8 @@ export class QuantumController {
     };
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Post('sign')
   @ApiOperation({ summary: 'Sign message with post-quantum signature' })
   @ApiResponse({ status: 200, description: 'Signature generated' })
