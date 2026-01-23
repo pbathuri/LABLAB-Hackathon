@@ -131,7 +131,8 @@ q[3]: ─H──────────X──Rz(θ₅)────────
         <div className="text-sm text-muted-foreground mb-3">Convergence History</div>
         <div className="h-20 flex items-end gap-1">
           {Array.from({ length: 30 }).map((_, i) => {
-            const height = Math.max(20, 100 - (i * 2.5) + Math.random() * 10)
+            // Deterministic convergence curve
+            const height = Math.max(20, 100 - (i * 2.5) + (i % 3) * 3)
             return (
               <motion.div
                 key={i}

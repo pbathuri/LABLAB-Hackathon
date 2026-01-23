@@ -33,30 +33,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const authAttempted = useRef(false)
 
-  /**
-   * Auto-authenticate with backend when wallet connects
-   * This ensures JWT tokens are automatically created
-   */
   const autoAuthenticate = useCallback(async (walletAddr: string) => {
     if (authAttempted.current) return
     authAttempted.current = true
 
-    try {
-      // Check if we already have a valid token
-      const existingToken = api.getStoredAuthToken()
-      if (existingToken) {
-        setIsAuthenticated(true)
-        return
-      }
+    const existingToken = api.getStoredAuthToken()
+    if (existingToken) {
+      setIsAuthenticated(true)
+      return
+    }
 
-      // Auto-login with demo account
+    try {
       const result = await api.autoLoginDemo(walletAddr)
-      if (result) {
-        setIsAuthenticated(true)
-        console.log('Auto-authenticated with backend')
-      }
-    } catch (err) {
-      console.warn('Auto-authentication failed:', err)
+      if (result) setIsAuthenticated(true)
+    } catch {
+      // Silent fail - simulation mode will be used
     }
   }, [])
 
@@ -94,9 +85,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           network: chainId === 5042002 ? 'arc-testnet' : 'unknown',
         })
       }
-    } catch (err) {
-      console.error('Failed to fetch wallet:', err)
-      // Fallback to wagmi data on error
+    } catch {
       setWallet({
         address,
         balance: {
@@ -149,17 +138,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    // Use demo wallet and auto-authenticate
-    const demoAddress = '0xDEMO' + Math.random().toString(16).slice(2, 10).padEnd(32, '0')
+    // Use demo wallet
+    const demoAddress = '0xDEMO742f8a3b5c6d7e9f0000000000000000'
     setIsDemoConnected(true)
-    authAttempted.current = false // Reset to allow auth
+    authAttempted.current = false
     
     setWallet({
       address: demoAddress,
-      balance: {
-        USDC: '1000.00',
-        ARC: '10.00',
-      },
+      balance: { USDC: '1000.00', ARC: '10.00' },
       network: 'arc-testnet',
     })
 

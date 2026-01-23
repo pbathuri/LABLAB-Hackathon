@@ -70,19 +70,19 @@ export function AuthPage({ onLoginSuccess, onNavigate, onConnectWallet }: AuthPa
                 {/* Background gradient */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#00D9FF]/20 via-[#7B61FF]/10 to-transparent" />
 
-                {/* Floating particles */}
+                {/* Floating particles - deterministic positions */}
                 {[...Array(20)].map((_, i) => (
                     <div
                         key={i}
                         className="absolute rounded-full animate-pulse"
                         style={{
-                            width: Math.random() * 6 + 2 + 'px',
-                            height: Math.random() * 6 + 2 + 'px',
+                            width: ((i * 3) % 6) + 2 + 'px',
+                            height: ((i * 3) % 6) + 2 + 'px',
                             background: i % 2 === 0 ? '#00D9FF' : '#7B61FF',
-                            left: Math.random() * 100 + '%',
-                            top: Math.random() * 100 + '%',
-                            opacity: Math.random() * 0.5 + 0.2,
-                            animationDelay: Math.random() * 2 + 's',
+                            left: ((i * 17) % 100) + '%',
+                            top: ((i * 23) % 100) + '%',
+                            opacity: 0.2 + (i % 5) * 0.1,
+                            animationDelay: (i % 4) * 0.5 + 's',
                         }}
                     />
                 ))}

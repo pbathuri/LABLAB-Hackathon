@@ -18,12 +18,12 @@ export function CaptainWhiskersMascot({
 }: CaptainWhiskersMascotProps) {
   const [isBlinking, setIsBlinking] = useState(false)
   
-  // Random blink effect
+  // Blink effect
   useEffect(() => {
     const blinkInterval = setInterval(() => {
       setIsBlinking(true)
       setTimeout(() => setIsBlinking(false), 150)
-    }, 3000 + Math.random() * 2000)
+    }, 4000)
     
     return () => clearInterval(blinkInterval)
   }, [])

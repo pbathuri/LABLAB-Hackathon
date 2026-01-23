@@ -162,19 +162,17 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
   }, [messages])
 
   const addAgentMessage = useCallback((content: string) => {
-    const agentMessage: Message = {
-      id: (Date.now() + Math.random()).toString(),
+    setMessages((prev) => [...prev, {
+      id: `agent-${Date.now()}-${prev.length}`,
       role: 'agent',
       content,
       timestamp: new Date(),
-    }
-    setMessages((prev) => [...prev, agentMessage])
+    }])
   }, [])
 
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-  const createMockHash = () =>
-    `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`
+  const createMockHash = () => `0x${Date.now().toString(16).padEnd(64, 'f')}`
 
   const shortenHash = (hash?: string | null) => {
     if (!hash) return 'N/A'
@@ -254,7 +252,7 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
       setStepStatus('wallet', 'running')
       let circleWallet = {
         walletId: 'demo-wallet',
-        address: wallet?.address || `0x${Math.random().toString(16).slice(2, 42)}`,
+        address: wallet?.address || '0xDEMO742f8a3b5c6d7e9f0000000000000000',
       }
 
       if (!isSimulationMode) {

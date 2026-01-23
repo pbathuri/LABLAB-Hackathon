@@ -134,19 +134,18 @@ class ApiService {
   }
 
   private async request<T>(endpoint: string, options?: RequestInit, timeoutMs = 15000): Promise<T> {
+    const token = this.getAuthToken()
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+    const headers = new Headers(options?.headers || {})
+    headers.set('Content-Type', 'application/json')
+    headers.set('ngrok-skip-browser-warning', 'true')
+
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`)
+    }
+
     try {
-      const token = this.getAuthToken()
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-      const headers = new Headers(options?.headers || {})
-      headers.set('Content-Type', 'application/json')
-      // Skip ngrok interstitial page for demo
-      headers.set('ngrok-skip-browser-warning', 'true')
-
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`)
-      }
-
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
         headers,
@@ -161,11 +160,10 @@ class ApiService {
 
       return response.json()
     } catch (error: any) {
+      clearTimeout(timeoutId)
       if (error.name === 'AbortError') {
-        console.error(`API request timed out: ${endpoint}`)
-        throw new Error('Request timed out. Please try again.')
+        throw new Error('Request timed out')
       }
-      console.error(`API request failed: ${endpoint}`, error)
       throw error
     }
   }
@@ -237,7 +235,7 @@ class ApiService {
         name: symbol,
         allocation: Math.round(((weight as number) / (total || 1)) * 100),
         value: (weight as number) * 1000,
-        change24h: Math.random() * 5 - 2.5,
+        change24h: symbol === 'ETH' ? 2.5 : symbol === 'ARC' ? -1.2 : 0,
         color: symbol === 'USDC' ? '#2775CA' : symbol === 'ETH' ? '#627EEA' : '#00D9FF',
       }))
     } catch {
@@ -269,15 +267,9 @@ class ApiService {
         }),
       })
       return { ...result, status: 'completed' }
-    } catch (error) {
-      // If direct settlement fails (no auth or other error), use agent decision
-      // For demo purposes, we'll create a mock response
-      console.warn('Direct settlement failed, using agent decision flow:', error)
-
-      // Return a mock decision ID for demo
-      const decisionId = `decision_${Date.now()}`
+    } catch {
       return {
-        decisionId,
+        decisionId: `decision_${Date.now()}`,
         status: 'pending',
       }
     }
@@ -340,22 +332,18 @@ class ApiService {
         decisionId: result.id,
         explanation: result.explanation || result.reasoning || "I've processed your request. The transaction is being verified by our BFT consensus layer.",
       }
-    } catch (error: any) {
-      // For demo purposes, return a mock response if backend is unavailable
-      console.warn('Agent decision failed, using mock response:', error)
-
-      // Generate a realistic mock response
+    } catch {
       const mockId = `decision_${Date.now()}`
-      const action = params.instruction.toLowerCase().includes('send') ? 'transfer' :
-        params.instruction.toLowerCase().includes('optimize') ? 'rebalance' : 'analysis'
+      const isTransfer = params.instruction.toLowerCase().includes('send')
+      const isOptimize = params.instruction.toLowerCase().includes('optimize')
 
       return {
         decisionId: mockId,
-        explanation: action === 'transfer'
-          ? `I've queued your transfer request (${mockId}). It's being verified by 11 BFT nodes - 7 signatures required for consensus.`
-          : action === 'rebalance'
-            ? `Portfolio optimization complete (${mockId}). VQE algorithm suggests: 45% USDC, 35% ETH, 20% ARC for optimal risk-adjusted returns.`
-            : `I've analyzed your request (${mockId}). This action is being processed through our quantum-secured pipeline.`,
+        explanation: isTransfer
+          ? `Transfer queued (${mockId}). Verifying with 11 BFT nodes - 7 signatures required.`
+          : isOptimize
+            ? `Optimization complete (${mockId}). VQE suggests: 45% USDC, 35% ETH, 20% ARC.`
+            : `Request processed (${mockId}). Running through quantum-secured pipeline.`,
       }
     }
   }
@@ -483,36 +471,24 @@ class ApiService {
     return response
   }
 
-  /**
-   * Auto-login with a demo account for seamless experience
-   * Creates account if doesn't exist, or logs in if it does
-   */
   async autoLoginDemo(walletAddress?: string): Promise<AuthResponse | null> {
     const demoEmail = `demo-${walletAddress?.slice(2, 10) || 'user'}@captainwhiskers.demo`
     const demoPassword = 'CaptainWhiskers2026!Demo'
 
     try {
-      // Try to register first
-      const result = await this.register({
+      return await this.register({
         email: demoEmail,
         password: demoPassword,
         walletAddress: walletAddress || '0xDemoWallet',
       })
-      console.log('Auto-registered demo account')
-      return result
     } catch (error: any) {
-      // If user already exists, try login
       if (error.message?.includes('already exists') || error.message?.includes('409') || error.message?.includes('Conflict')) {
         try {
-          const result = await this.login({ email: demoEmail, password: demoPassword })
-          console.log('Auto-logged in to demo account')
-          return result
-        } catch (loginError) {
-          console.error('Auto-login failed:', loginError)
+          return await this.login({ email: demoEmail, password: demoPassword })
+        } catch {
           return null
         }
       }
-      console.error('Auto-register failed:', error)
       return null
     }
   }
@@ -607,10 +583,10 @@ class ApiService {
       return await this.request(`/quantum/random`)
     } catch {
       return {
-        randomNumbers: Array.from({ length: 10 }, () => Math.random()),
-        nonce: Math.random().toString(16).slice(2),
+        randomNumbers: [0.42, 0.78, 0.15, 0.93, 0.31, 0.67, 0.54, 0.89, 0.26, 0.71],
+        nonce: 'f8a2b3c4d5e6',
         quantumUUID: `qrng-${Date.now()}`,
-        source: 'QRNG Simulation (frontend fallback)',
+        source: 'QRNG Simulation',
       }
     }
   }

@@ -22,7 +22,7 @@ export class QuantumController {
     private readonly quantumService: QuantumService,
     private readonly qrngService: QRNGService,
     private readonly postQuantumCrypto: PostQuantumCryptoService,
-  ) {}
+  ) { }
 
   @Post('optimize')
   @ApiOperation({ summary: 'Optimize portfolio using VQE algorithm (public)' })
