@@ -140,6 +140,8 @@ class ApiService {
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
       const headers = new Headers(options?.headers || {})
       headers.set('Content-Type', 'application/json')
+      // Skip ngrok interstitial page for demo
+      headers.set('ngrok-skip-browser-warning', 'true')
 
       if (token) {
         headers.set('Authorization', `Bearer ${token}`)
