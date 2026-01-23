@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -13,6 +13,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ReliabilityModule } from './modules/reliability/reliability.module';
 import { CircleModule } from './modules/circle/circle.module';
 
+const logger = new Logger('AppModule');
+
 @Module({
   imports: [
     // Configuration
@@ -21,43 +23,37 @@ import { CircleModule } from './modules/circle/circle.module';
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // Database - Use DATABASE_URL (Railway standard) or individual variables
+    // Database - Use DATABASE_URL, fallback to SQLite for demo mode
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get('DATABASE_URL');
         
-        // Use DATABASE_URL directly if provided (TypeORM handles parsing)
-        if (databaseUrl) {
-          // Normalize postgresql:// to postgres:// for TypeORM
+        // Use DATABASE_URL if provided (PostgreSQL)
+        if (databaseUrl && databaseUrl !== 'demo') {
+          logger.log('Using PostgreSQL database');
           const normalizedUrl = databaseUrl.replace(/^postgresql:\/\//, 'postgres://');
           
           return {
             type: 'postgres',
-            url: normalizedUrl, // TypeORM will parse this automatically
+            url: normalizedUrl,
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: configService.get('NODE_ENV') !== 'production',
+            synchronize: true, // Auto-create tables for demo
             logging: configService.get('NODE_ENV') === 'development',
-            retryAttempts: 5,
+            retryAttempts: 3,
             retryDelay: 3000,
             autoLoadEntities: true,
-            ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
+            ssl: { rejectUnauthorized: false },
           };
         }
         
-        // Fallback to individual variables
+        // Fallback to SQLite for demo/development without external DB
+        logger.log('Using SQLite in-memory database (demo mode)');
         return {
-          type: 'postgres',
-          host: configService.get('DB_HOST', 'localhost'),
-          port: configService.get('DB_PORT', 5432),
-          username: configService.get('DB_USERNAME', 'postgres'),
-          password: configService.get('DB_PASSWORD', 'postgres'),
-          database: configService.get('DB_NAME', 'captain_whiskers'),
+          type: 'sqlite',
+          database: ':memory:',
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: configService.get('NODE_ENV') !== 'production',
-          logging: configService.get('NODE_ENV') === 'development',
-          retryAttempts: 5,
-          retryDelay: 3000,
+          synchronize: true,
           autoLoadEntities: true,
         };
       },

@@ -19,6 +19,7 @@ const policy_module_1 = require("./modules/policy/policy.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const reliability_module_1 = require("./modules/reliability/reliability.module");
 const circle_module_1 = require("./modules/circle/circle.module");
+const logger = new common_1.Logger('AppModule');
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,32 +34,27 @@ exports.AppModule = AppModule = __decorate([
                 imports: [config_1.ConfigModule],
                 useFactory: (configService) => {
                     const databaseUrl = configService.get('DATABASE_URL');
-                    if (databaseUrl) {
+                    if (databaseUrl && databaseUrl !== 'demo') {
+                        logger.log('Using PostgreSQL database');
                         const normalizedUrl = databaseUrl.replace(/^postgresql:\/\//, 'postgres://');
                         return {
                             type: 'postgres',
                             url: normalizedUrl,
                             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                            synchronize: configService.get('NODE_ENV') !== 'production',
+                            synchronize: true,
                             logging: configService.get('NODE_ENV') === 'development',
-                            retryAttempts: 5,
+                            retryAttempts: 3,
                             retryDelay: 3000,
                             autoLoadEntities: true,
-                            ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
+                            ssl: { rejectUnauthorized: false },
                         };
                     }
+                    logger.log('Using SQLite in-memory database (demo mode)');
                     return {
-                        type: 'postgres',
-                        host: configService.get('DB_HOST', 'localhost'),
-                        port: configService.get('DB_PORT', 5432),
-                        username: configService.get('DB_USERNAME', 'postgres'),
-                        password: configService.get('DB_PASSWORD', 'postgres'),
-                        database: configService.get('DB_NAME', 'captain_whiskers'),
+                        type: 'sqlite',
+                        database: ':memory:',
                         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                        synchronize: configService.get('NODE_ENV') !== 'production',
-                        logging: configService.get('NODE_ENV') === 'development',
-                        retryAttempts: 5,
-                        retryDelay: 3000,
+                        synchronize: true,
                         autoLoadEntities: true,
                     };
                 },
