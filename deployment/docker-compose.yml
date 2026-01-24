@@ -31,7 +31,7 @@ services:
   # NestJS Backend
   backend:
     build:
-      context: ./apps/backend
+      context: ../apps/backend
       dockerfile: Dockerfile
     container_name: captain-whiskers-backend
     environment:
@@ -45,9 +45,9 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - QUANTUM_SERVICE_URL=http://quantum:8000
-      - GEMINI_API_KEY=AIzaSyAYWxhjVCfa7yIvCiqJIWm4xi6biLgEoKU
-      - CIRCLE_API_KEY=10d449cfe62733f77253ddcd466bf71d:1feea152581afa7adcebb320762b1376
-      - PRIVATE_KEY=0x59a4c1937c9db471392671e2bf01372c2d19302ad60fd1ab6b98766da90d988d
+      - GEMINI_API_KEY=your-gemini-api-key-here
+      - CIRCLE_API_KEY=your-circle-api-key-here
+      - PRIVATE_KEY=your-ethereum-private-key-here
       - TREASURY_ADDRESS=0x5B8648f8BE56A43C926783CA0E51FbD0540822B4
       - ARC_RPC_URL=https://rpc.testnet.arc.network
     ports:
@@ -61,20 +61,20 @@ services:
   # Python Quantum Service
   quantum:
     build:
-      context: ./apps/quantum-service
+      context: ../apps/quantum-service
       dockerfile: Dockerfile
     container_name: captain-whiskers-quantum
     ports:
       - "4002:8000"
     volumes:
-      - ./apps/quantum-service:/app
+      - ../apps/quantum-service:/app
     environment:
       - PYTHONUNBUFFERED=1
 
   # Next.js Frontend
   frontend:
     build:
-      context: ./apps/frontend
+      context: ../apps/frontend
       dockerfile: Dockerfile
     container_name: captain-whiskers-frontend
     environment:
@@ -85,7 +85,7 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./apps/frontend:/app
+      - ../apps/frontend:/app
       - /app/node_modules
       - /app/.next
 

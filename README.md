@@ -74,9 +74,13 @@ Built for the **Arc × Circle Hackathon** — A next-generation autonomous comme
 
 ## 📚 Documentation
 
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Quick deployment guide (Vercel + Railway)
-- **[HOSTING_GUIDE.md](./HOSTING_GUIDE.md)** - Comprehensive hosting documentation
+- **[DEPLOYMENT FOLDER](./deployment/)** - All deployment configuration and documentation
+- **[deployment/README.md](./deployment/README.md)** - Deployment quick start guide
+- **[deployment/DEPLOYMENT.md](./deployment/DEPLOYMENT.md)** - Detailed deployment instructions
+- **[deployment/HOSTING_GUIDE.md](./deployment/HOSTING_GUIDE.md)** - Platform-specific hosting guides
 - **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Testing instructions
+- **[TRANSACTION_WORKFLOW.md](./TRANSACTION_WORKFLOW.md)** - Transaction flow documentation
+- **[CIRCLE_TECH_DEEPDIVE.md](./CIRCLE_TECH_DEEPDIVE.md)** - Circle integration details
 
 ## 🚀 Quick Start
 
@@ -109,11 +113,14 @@ pip install -r requirements.txt
 cd ../..
 
 # Start PostgreSQL and run migrations
+cd deployment
 docker-compose up -d postgres
+cd ..
 pnpm db:migrate
 
-# Start all services
-pnpm dev
+# Start all services (from deployment folder)
+cd deployment
+./start-dev.sh
 ```
 
 ### Environment Variables
