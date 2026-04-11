@@ -1,0 +1,49 @@
+.env.example
+  1b495085c67fe857 17,19,50-54,57-63
+contracts/package.json
+  1b495085c67fe857 4,12-16
+contracts/scripts/set-agent-uri.ts
+  1b495085c67fe857 1-64
+SUBMISSION_CHECKLIST.md
+  1b495085c67fe857 18
+docs/FINAL_SHIP_CHECKLIST.md
+  1b495085c67fe857 31-36,48-56
+docs/HACKATHON_EXECUTION.md
+  1b495085c67fe857 1-17,19-21,23-74
+docs/SUBMISSION_PACKAGE.md
+  1b495085c67fe857 1-26
+docs/CAPITAL_SANDBOX.md
+  1b495085c67fe857 1-27
+apps/backend/src/common/rpc.util.ts
+  1b495085c67fe857 1,5-6
+contracts/scripts/submit-hackathon-intent.ts
+  1b495085c67fe857 1-104
+README.md
+  1b495085c67fe857 9-22
+apps/backend/src/modules/agent/services/gemini-function-executor.service.ts
+  1b495085c67fe857 6-10,22,31-88,93,98-105,109-115,119-133,135-136
+docs/agent-card.json
+  1b495085c67fe857 4-5,15-16,41
+apps/backend/src/modules/risk/risk.service.ts
+  1b495085c67fe857 28-29,35,37,42-51,53-91,101-114,137-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "24e8560d198d0ee4e9dcbbadfa5dfbb42b820a40",
+  "prompts": {
+    "1b495085c67fe857": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "bcdfa969-6360-476d-b3db-84a2fa789b15",
+        "model": "composer-2"
+      },
+      "human_author": "pbathuri",
+      "messages": [],
+      "total_additions": 1043,
+      "total_deletions": 96,
+      "accepted_lines": 1021,
+      "overriden_lines": 0
+    }
+  }
+}
