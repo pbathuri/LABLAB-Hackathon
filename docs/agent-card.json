@@ -1,0 +1,41 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Captain Whiskers V2",
+  "description": "Quantum-aware AI trading agent with ERC-8004 identity, EIP-712 trade intent signing, Kraken paper/live execution, RiskRouter validation on Base Sepolia, and Gemini-powered autonomous decisions.",
+  "image": "https://raw.githubusercontent.com/pbathuri/LABLAB-Hackathon/main/apps/frontend/public/images/captain-whiskers-astronaut.svg",
+  "services": [
+    {
+      "name": "web",
+      "endpoint": "http://localhost:3000"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "supportedTrust": [
+    "reputation",
+    "crypto-economic"
+  ],
+  "capabilities": {
+    "trading": [
+      "spot-paper",
+      "spot-live"
+    ],
+    "exchanges": [
+      "kraken"
+    ],
+    "chains": [
+      "base-sepolia"
+    ],
+    "strategies": [
+      "momentum",
+      "mean-reversion",
+      "risk-parity"
+    ],
+    "risk": [
+      "position-limits",
+      "drawdown-circuit-breaker",
+      "cooldown",
+      "daily-volume-cap"
+    ]
+  }
+}

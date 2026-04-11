@@ -2,39 +2,62 @@
 
 > **Trustless AI Agent & Quantum-Aware Treasury Management System**
 
-Built for the **Arc × Circle Hackathon** — A next-generation autonomous commerce platform combining quantum computing, Byzantine fault tolerance, and post-quantum cryptography.
+**Full repository map (every app, folder, and source file explained, step-by-step setup for builders and tools with no prior context):** [**REPO_GUIDE.md**](./REPO_GUIDE.md)
+
+**Standalone blueprint (no repo access required — developer intent, architecture, APIs, env, and phased rebuild from scratch):** [**STANDALONE_PROJECT_BLUEPRINT.md**](./STANDALONE_PROJECT_BLUEPRINT.md)
+
+**LabLab / hackathon submission (checklists, sandbox notes, copy for the form):** [HACKATHON_EXECUTION.md](./docs/HACKATHON_EXECUTION.md) · [SUBMISSION_PACKAGE.md](./docs/SUBMISSION_PACKAGE.md) · [CAPITAL_SANDBOX.md](./docs/CAPITAL_SANDBOX.md). Contract helpers: `cd contracts && npm run verify:erc8004-registry` · `npm run post:reputation` · `npm run set:agent-uri` · `npm run submit:hackathon-intent` · `npm run upload:agent-card`. Demo curls: `npm run demo-recording`.
+
+## Deployed contracts (Base Sepolia) — fill after `deploy-base-sepolia`
+
+| Contract | Address |
+|----------|---------|
+| MockUSDC | _set in `.env`_ |
+| MockWETH | _set in `.env`_ |
+| RiskRouter | _set in `.env`_ |
+| CapitalVault | _set in `.env`_ |
+
+Explorer: [Base Sepolia](https://sepolia.basescan.org). ERC-8004 agent: set `ERC8004_AGENT_ID` then view on [8004agents.ai/base](https://8004agents.ai/base).
+
+Built for the **LabLab AI Trading Agents Hackathon** (ERC-8004 + optional Kraken tracks) on **Base Sepolia** — autonomous trading with on-chain identity, RiskRouter limits, and Gemini-driven execution. *Arc × Circle* references in older docs refer to an earlier program; this repo targets the current LabLab / Surge submission path.
 
 ![Captain Whiskers Banner](./docs/banner.png)
 
 ## 🌟 Features
 
 ### 🧠 AI-Powered Treasury Management
+
 - **Gemini Integration**: Natural language instructions processed by Gemini Flash/Pro models
 - **Function Calling**: Automated trade execution based on user intents
 - **Explainable AI**: Captain Whiskers mascot explains every decision
 
 ### ⚛️ Quantum Computing
+
 - **VQE Portfolio Optimization**: Variational Quantum Eigensolver for Markowitz portfolio optimization
 - **Qiskit Integration**: Ready for real quantum hardware deployment
 - **QRNG**: Quantum random number generation for cryptographic nonces
 
 ### 🔐 Post-Quantum Security
+
 - **CRYSTALS-Dilithium**: Lattice-based signatures resistant to quantum attacks
 - **EIP-712 Signing**: Post-quantum signatures for x402 micropayments
 - **Secure Key Management**: Quantum-safe key generation and storage
 
 ### 🛡️ Byzantine Fault Tolerant Verification
+
 - **11-Node Consensus**: Tolerates up to 3 Byzantine (malicious) nodes
 - **7 Required Signatures**: 2f + 1 threshold for transaction approval
 - **On-Chain Logging**: All verifications recorded on Arc blockchain
 
 ### 💳 x402 Micropayments
+
 - **Pay-per-Call**: Automatic payment for API/data access
 - **Pay-on-Success**: Escrow-based payments released on completion
 - **Bundle Payments**: Aggregate micropayments for efficiency
 - **Reliability Scoring**: Provider selection based on success rate and latency
 
 ### 📊 Smart Policy Enforcement
+
 - **Per-Transaction Limits**: Customizable spending caps
 - **Daily Spending Caps**: Budget management
 - **Cooldown Periods**: Rate limiting between trades
@@ -126,6 +149,7 @@ cd deployment
 ### Environment Variables
 
 #### Backend (.env)
+
 ```env
 # Database
 DB_HOST=localhost
@@ -210,6 +234,7 @@ cd apps/quantum-service && pytest
 ## 🎥 Demo
 
 Watch our 5-minute demo showcasing:
+
 1. Policy configuration through the UI
 2. Natural language trading instructions
 3. BFT verification in action

@@ -15,7 +15,7 @@
 - ✅ Byzantine Fault Tolerant verification (11 nodes, 7+ required)
 - ✅ Post-quantum cryptography (CRYSTALS-Dilithium)
 - ✅ x402 micropayment protocol
-- ✅ Smart contract deployment (Arc testnet)
+- ✅ Smart contract deployment (Base Sepolia; see `contracts/scripts/deploy-base-sepolia.ts`)
 - ✅ Beautiful UI with Captain Whiskers mascot
 - ✅ Mobile responsive design
 - ✅ Onboarding flow

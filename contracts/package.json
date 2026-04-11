@@ -1,12 +1,19 @@
 {
   "name": "@captain-whiskers/contracts",
   "version": "1.0.0",
-  "description": "Captain Whiskers smart contracts for Arc blockchain",
+  "description": "Captain Whiskers smart contracts (Base Sepolia, ERC-8004)",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:testnet": "hardhat run scripts/deploy.ts --network arc-testnet",
     "deploy:mainnet": "hardhat run scripts/deploy.ts --network arc-mainnet",
+    "deploy:base-sepolia": "hardhat run scripts/deploy-base-sepolia.ts --network base-sepolia",
+    "register:erc8004": "ts-node --transpile-only scripts/register-erc8004.ts",
+    "verify:erc8004-registry": "ts-node --transpile-only scripts/verify-erc8004-registry.ts",
+    "post:reputation": "ts-node --transpile-only scripts/post-reputation.ts",
+    "set:agent-uri": "ts-node --transpile-only scripts/set-agent-uri.ts",
+    "submit:hackathon-intent": "ts-node --transpile-only scripts/submit-hackathon-intent.ts",
+    "upload:agent-card": "ts-node --transpile-only scripts/upload-agent-card.ts",
     "verify": "hardhat verify"
   },
   "devDependencies": {
