@@ -1,0 +1,127 @@
+apps/backend/src/app.module.ts
+  1b495085c67fe857 2,6,24,30-35,52-61,104,107-110
+contracts/scripts/upload-agent-card.ts
+  1b495085c67fe857 1-50
+apps/backend/src/modules/kraken/kraken-paper.service.ts
+  1b495085c67fe857 1-3,5-6,10-37,40-109,112-135,144-149,162-167,173-295,299-353,358-360,365-367,372-377,382-396
+apps/frontend/src/components/layout/DashboardLayout.tsx
+  1b495085c67fe857 32,308-310
+apps/backend/src/modules/kraken/kraken.module.ts
+  1b495085c67fe857 2,7,10
+docs/VERCEL.md
+  1b495085c67fe857 1-55
+apps/backend/src/modules/kraken/entities/paper-portfolio-state.entity.ts
+  1b495085c67fe857 1-18
+docs/HACKATHON_EXECUTION.md
+  1b495085c67fe857 61-62
+apps/backend/api/[[...all]].ts
+  1b495085c67fe857 1-15
+scripts/diagnose.sh
+  1b495085c67fe857 108-118,120-140,142-146
+apps/backend/vercel.json
+  1b495085c67fe857 1-25
+apps/backend/tsconfig.json
+  1b495085c67fe857 26-29
+contracts/scripts/submit-hackathon-intent.ts
+  1b495085c67fe857 9,28-31,36
+apps/backend/src/modules/risk/eip712-hackathon-intent.signer.ts
+  1b495085c67fe857 1-117
+apps/backend/src/modules/kraken/kraken-market.service.ts
+  1b495085c67fe857 1,3,7-8,10-15,17,19-34
+apps/backend/src/modules/risk/eip712-trade-intent.signer.ts
+  1b495085c67fe857 1-91
+apps/frontend/src/app/dashboard/identity/page.tsx
+  1b495085c67fe857 93
+contracts/test/RiskRouter.test.ts
+  1b495085c67fe857 40-77
+contracts/src/RiskRouter.sol
+  1b495085c67fe857 140-141,147-156
+apps/backend/src/serverless.ts
+  1b495085c67fe857 1-46
+contracts/scripts/register-hackathon.ts
+  1b495085c67fe857 1-136,138-229
+contracts/package.json
+  1b495085c67fe857 16-17
+apps/frontend/next.config.js
+  1b495085c67fe857 1-27,48,50-52,56-62
+apps/backend/src/modules/kraken/kraken-public.api.ts
+  1b495085c67fe857 1-36
+docs/agent-card.json
+  1b495085c67fe857 4-5,10-14,17-31,36-39
+apps/backend/src/modules/kraken/dto/paper-trade.dto.ts
+  1b495085c67fe857 1-9,11-13,18,24-26,30-31,36,41-42
+contracts/scripts/post-reputation.ts
+  1b495085c67fe857 1-71
+apps/backend/src/modules/risk/risk.service.ts
+  1b495085c67fe857 54-60,62,64-70,115-116
+apps/backend/src/main.ts
+  1b495085c67fe857 6,13,43-46,50-53
+apps/backend/src/modules/agent/services/trading-loop.service.ts
+  1b495085c67fe857 8-11,15,19-105,111-113,123,126,129-138,141-158,161,168-170,173-180,183,187-204,206,211-361,363-508,513-522,527,529-535,538,545-569,580-592,598-603
+apps/backend/src/modules/agent/agent-cron.controller.ts
+  1b495085c67fe857 1-30
+apps/backend/src/modules/agent/agent.module.ts
+  1b495085c67fe857 6,21,33,35
+contracts/hardhat.config.ts
+  1b495085c67fe857 17-25,47-57,70-73
+contracts/scripts/blast-intents.ts
+  1b495085c67fe857 1-209
+apps/backend/src/modules/hackathon/hackathon.service.ts
+  1b495085c67fe857 1-552
+package.json
+  1b495085c67fe857 20
+contracts/scripts/verify-erc8004-registry.ts
+  1b495085c67fe857 1-70
+apps/backend/src/modules/agent/dto/agent-instruct.dto.ts
+  1b495085c67fe857 1-8
+apps/backend/src/modules/agent/agent-instruct.controller.ts
+  1b495085c67fe857 11,20,36,38
+apps/backend/Procfile
+  1b495085c67fe857 1
+apps/frontend/src/components/ErrorBoundary.tsx
+  1b495085c67fe857 1-41
+apps/backend/src/modules/agent/services/gemini-trading.service.ts
+  1b495085c67fe857 108
+apps/backend/src/modules/hackathon/hackathon.module.ts
+  1b495085c67fe857 1-10
+apps/backend/src/common/cors.util.ts
+  1b495085c67fe857 1-38
+scripts/demo-recording.sh
+  1b495085c67fe857 1-41
+apps/backend/api/vercel-path.ts
+  1b495085c67fe857 1-34
+contracts/src/CapitalVault.sol
+  1b495085c67fe857 55
+apps/backend/src/modules/risk/risk.module.ts
+  1b495085c67fe857 4-5,9-18
+apps/backend/src/modules/hackathon/hackathon.controller.ts
+  1b495085c67fe857 1-217
+.env.example
+  1b495085c67fe857 10,12-13,31,39,41-42,48-49,57,59-69,90,93
+apps/backend/package.json
+  1b495085c67fe857 13
+apps/backend/Dockerfile
+  1b495085c67fe857 56
+apps/backend/src/modules/agent/services/gemini.service.ts
+  1b495085c67fe857 42-43,118-121,145,204,237
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "4203842f085f0063a726c99c0aa452f8f5ac5480",
+  "prompts": {
+    "1b495085c67fe857": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "bcdfa969-6360-476d-b3db-84a2fa789b15",
+        "model": "composer-2"
+      },
+      "human_author": "pbathuri",
+      "messages": [],
+      "total_additions": 3090,
+      "total_deletions": 248,
+      "accepted_lines": 3217,
+      "overriden_lines": 3
+    }
+  }
+}
