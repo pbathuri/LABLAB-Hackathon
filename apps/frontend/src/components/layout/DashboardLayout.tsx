@@ -16,18 +16,20 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Coins,
   Activity,
   CheckCircle2,
   XCircle,
   Loader2,
-  ChevronDown,
-  ChevronUp,
+  LineChart,
+  Fingerprint,
+  Trophy,
+  AlertTriangle,
 } from 'lucide-react'
 import { useWallet } from '@/contexts/WalletContext'
 import { NotificationsModal } from '@/components/modals/NotificationsModal'
 import { HelpModal } from '@/components/modals/HelpModal'
 import { api } from '@/lib/api'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -35,8 +37,11 @@ interface DashboardLayoutProps {
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/dashboard/trading', icon: LineChart, label: 'Trading' },
+  { href: '/dashboard/identity', icon: Fingerprint, label: 'Identity' },
+  { href: '/dashboard/leaderboard', icon: Trophy, label: 'Leaderboard' },
+  { href: '/dashboard/risk', icon: AlertTriangle, label: 'Risk' },
   { href: '/dashboard/wallet', icon: Wallet, label: 'Wallet' },
-  { href: '/dashboard/circle', icon: Coins, label: 'Circle' },
   { href: '/dashboard/quantum', icon: Cpu, label: 'Quantum' },
   { href: '/dashboard/verification', icon: Shield, label: 'Verification' },
   { href: '/dashboard/history', icon: History, label: 'History' },
@@ -64,7 +69,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       try {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 4000)
-        const response = await fetch(`${baseUrl}/circle/config`, { signal: controller.signal })
+        const response = await fetch(`${baseUrl}/`, { signal: controller.signal })
         clearTimeout(timeoutId)
         if (isMounted) {
           setBackendStatus(response.ok ? 'online' : 'offline')
@@ -300,7 +305,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Page Content */}
-        {children}
+        <div className="p-0">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </div>
       </main>
 
       {/* Judge Demo Panel - Real-time System Status */}

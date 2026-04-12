@@ -13,6 +13,8 @@
     "post:reputation": "ts-node --transpile-only scripts/post-reputation.ts",
     "set:agent-uri": "ts-node --transpile-only scripts/set-agent-uri.ts",
     "submit:hackathon-intent": "ts-node --transpile-only scripts/submit-hackathon-intent.ts",
+    "register:hackathon": "ts-node --transpile-only scripts/register-hackathon.ts",
+    "blast:intents": "ts-node --transpile-only scripts/blast-intents.ts",
     "upload:agent-card": "ts-node --transpile-only scripts/upload-agent-card.ts",
     "verify": "hardhat verify"
   },

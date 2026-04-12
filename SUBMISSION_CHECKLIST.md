@@ -3,6 +3,7 @@
 ## Project Status: READY FOR SUBMISSION ✅
 
 ### Code Quality
+
 - ✅ All TypeScript/compilation errors fixed
 - ✅ All imports/exports properly connected
 - ✅ Build passes successfully (frontend & backend)
@@ -10,6 +11,7 @@
 - ✅ Clean, organized code structure
 
 ### Features Implemented
+
 - ✅ AI-powered treasury management (Gemini integration)
 - ✅ Quantum portfolio optimization (VQE)
 - ✅ Byzantine Fault Tolerant verification (11 nodes, 7+ required)
@@ -22,18 +24,21 @@
 - ✅ Authentication & wallet connection
 
 ### Documentation
+
 - ✅ Comprehensive README.md
 - ✅ Deployment guide (DEPLOYMENT.md)
 - ✅ Hosting guide (HOSTING_GUIDE.md)
 - ✅ Testing guide (TESTING_GUIDE.md)
 
 ### Deployment Ready
+
 - ✅ Vercel configuration (vercel.json)
 - ✅ Railway configuration (railway.json, nixpacks.toml)
 - ✅ Docker configurations
 - ✅ Environment variable templates
 
 ### Smart Contracts
+
 - ✅ CaptainWhiskersTreasury.sol
 - ✅ BFTVerification.sol
 - ✅ X402Escrow.sol
@@ -41,6 +46,7 @@
 - ✅ Deployed to Arc testnet (Chain ID: 5042002)
 
 ### Repository
+
 - ✅ Clean git history
 - ✅ Proper .gitignore
 - ✅ All code pushed to GitHub
@@ -49,7 +55,7 @@
 ## Next Steps for Submission
 
 1. **Deploy Frontend to Vercel**
-   - Go to https://vercel.com/new
+   - Go to <https://vercel.com/new>
    - Import repository: `pbathuri/LABLAB-Hackathon`
    - Set root directory: `apps/frontend`
    - Add environment variables
@@ -78,9 +84,9 @@
 
 ## Repository Links
 
-- **GitHub**: https://github.com/pbathuri/LABLAB-Hackathon
-- **Arc Testnet Explorer**: https://testnet.arcscan.io
-- **Arc Testnet RPC**: https://testnet-rpc.arc.dev
+- **GitHub**: <https://github.com/pbathuri/LABLAB-Hackathon>
+- **Arc Testnet Explorer**: <https://testnet.arcscan.io>
+- **Arc Testnet RPC**: <https://testnet-rpc.arc.dev>
 
 ## Judging Criteria Alignment
 

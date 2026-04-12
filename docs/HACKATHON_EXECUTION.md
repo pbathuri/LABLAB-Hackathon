@@ -58,8 +58,8 @@ cd contracts && npm run set:agent-uri -- '<https://raw.githubusercontent.com/...
 
 ## Deploy demo (Vercel + Railway)
 
-1. **Vercel:** Import GitHub repo; root directory **`apps/frontend`**; framework Next.js; env **`NEXT_PUBLIC_API_URL`** = public backend URL (no trailing slash issues — match your API host).
-2. **Railway / Render / Fly:** Deploy **`apps/backend`** (or Dockerfile); set all secrets from `.env.example`; **`USE_POSTGRES=false`**; **`FRONTEND_ORIGIN`** = `https://<your-app>.vercel.app` for CORS.
+1. **Vercel:** Import GitHub repo; root directory **`apps/frontend`**; framework Next.js; env **`NEXT_PUBLIC_API_URL`** = public backend URL (no trailing slash issues — match your API host). Optional config: [`apps/frontend/vercel.json`](../apps/frontend/vercel.json).
+2. **Railway / Render / Fly:** Deploy **`apps/backend`** (or Dockerfile); set all secrets from `.env.example`; **`USE_POSTGRES=false`**; **`FRONTEND_ORIGIN`** = `https://<your-app>.vercel.app` for CORS. Optional config: [`apps/backend/railway.json`](../apps/backend/railway.json).
 3. Re-run **`set:agent-uri`** if the agent card URL changed.
 
 ## Hackathon intent CLI

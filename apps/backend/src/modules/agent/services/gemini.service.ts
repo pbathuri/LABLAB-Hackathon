@@ -39,6 +39,8 @@ export interface AnalysisResult {
 export class GeminiService implements OnModuleInit {
   private readonly logger = new Logger(GeminiService.name);
   private apiKey: string;
+  private modelFlash = 'gemini-2.5-flash';
+  private modelPro = 'gemini-2.5-pro';
   private baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
   // Available functions for the AI to call
@@ -113,6 +115,10 @@ export class GeminiService implements OnModuleInit {
 
   async onModuleInit() {
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY') || '';
+    this.modelFlash =
+      this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash';
+    this.modelPro =
+      this.configService.get<string>('GEMINI_MODEL_PRO') || 'gemini-2.5-pro';
     if (!this.apiKey) {
       this.logger.warn('GEMINI_API_KEY not configured - using mock responses');
     }
@@ -136,7 +142,7 @@ export class GeminiService implements OnModuleInit {
     }
 
     try {
-      const response = await this.callGemini('gemini-1.5-flash', {
+      const response = await this.callGemini(this.modelFlash, {
         contents: [
           {
             role: 'user',
@@ -195,7 +201,7 @@ export class GeminiService implements OnModuleInit {
         Respond in JSON format.
       `;
 
-      const response = await this.callGemini('gemini-1.5-pro', {
+      const response = await this.callGemini(this.modelPro, {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.3,
@@ -228,7 +234,7 @@ export class GeminiService implements OnModuleInit {
         Decision: ${JSON.stringify(decision)}
       `;
 
-      const response = await this.callGemini('gemini-1.5-flash', {
+      const response = await this.callGemini(this.modelFlash, {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.7,

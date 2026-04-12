@@ -493,6 +493,73 @@ class ApiService {
     }
   }
 
+  /** Gemini + Kraken paper tools — no JWT (public demo endpoint). */
+  async tradingInstruct(instruction: string): Promise<{
+    reasoning: string
+    functionCalls: Array<{ name: string; args: Record<string, unknown> }>
+    executionResults: Array<{
+      name: string
+      args: Record<string, unknown>
+      result: unknown
+    }>
+    raw?: unknown
+  }> {
+    return this.request(
+      '/api/agent/instruct',
+      {
+        method: 'POST',
+        body: JSON.stringify({ instruction }),
+      },
+      120000,
+    )
+  }
+
+  async krakenPaperStatus(): Promise<unknown> {
+    return this.request('/api/kraken/paper/status')
+  }
+
+  async krakenPaperHistory(): Promise<unknown> {
+    return this.request('/api/kraken/paper/history')
+  }
+
+  async krakenTicker(pair: string): Promise<unknown> {
+    return this.request(`/api/kraken/ticker/${encodeURIComponent(pair)}`)
+  }
+
+  async agentPerformance(): Promise<Record<string, unknown>> {
+    return this.request('/api/agent/performance')
+  }
+
+  async agentCycles(limit = 20): Promise<unknown[]> {
+    const data = await this.request<unknown[]>(`/api/agent/cycles?limit=${limit}`)
+    return Array.isArray(data) ? data : []
+  }
+
+  async identityStatus(): Promise<Record<string, unknown>> {
+    return this.request('/api/identity/status')
+  }
+
+  async riskContext(): Promise<{
+    agentAddress: string
+    mockUsdc: string
+    mockWeth: string
+    riskRouterAddress: string
+    riskRouterConfigured: boolean
+  }> {
+    return this.request('/api/risk/context')
+  }
+
+  async riskValidate(body: Record<string, unknown>): Promise<{ valid: boolean; reason: string }> {
+    return this.request('/api/risk/validate', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  }
+
+  async prismPrice(symbol: string): Promise<unknown> {
+    return this.request(`/api/prism/price/${encodeURIComponent(symbol)}`)
+  }
+
   /**
    * Check if backend is reachable and healthy
    */

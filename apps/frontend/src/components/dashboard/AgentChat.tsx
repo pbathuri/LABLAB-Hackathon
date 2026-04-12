@@ -379,10 +379,13 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
 
       activeStep = 'gateway'
       setStepStatus('gateway', 'running')
-      let gatewayTransfer = { amount: '25', txHash: createMockHash() }
+      let gatewayTransfer: { amount: string; txHash: string } = {
+        amount: '25',
+        txHash: createMockHash(),
+      }
 
       if (!isSimulationMode) {
-        gatewayTransfer = await api.createGatewaySettlement({
+        const gt = await api.createGatewaySettlement({
           amount: '25',
           sourceChain: 'Arc Testnet',
           destinationChain: 'Arc Testnet',
@@ -390,6 +393,10 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
           toAddress: circleWallet.address,
           notes: 'Full demo settlement',
         })
+        gatewayTransfer = {
+          amount: gt.amount,
+          txHash: gt.txHash ?? createMockHash(),
+        }
       }
 
       await delay(350)
@@ -523,89 +530,72 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
     }
 
     const preview = getPromptInsights(userInput)
-    const hasAuth = isAuthenticated || api.getStoredAuthToken()
 
-    if (!hasAuth) {
+    try {
+      const instruct = await api.tradingInstruct(userInput)
+
+      if (instruct.reasoning?.trim()) {
+        addAgentMessage(instruct.reasoning)
+      }
+
+      if (instruct.functionCalls?.length) {
+        const lines = instruct.functionCalls.map(
+          (fc) => `• ${fc.name}(${JSON.stringify(fc.args)})`,
+        )
+        addAgentMessage(
+          `**Tools invoked**\n${lines.join('\n')}`,
+        )
+      }
+
+      if (instruct.executionResults?.length) {
+        const lines = instruct.executionResults.map((r, i) => {
+          if (r && typeof r === 'object' && 'name' in r && 'result' in r) {
+            const name = String((r as { name: string }).name)
+            const res = (r as { result: unknown }).result
+            const snippet =
+              typeof res === 'object' && res !== null
+                ? JSON.stringify(res).slice(0, 600)
+                : String(res).slice(0, 600)
+            return `${i + 1}. **${name}** → ${snippet}`
+          }
+          return `${i + 1}. ${JSON.stringify(r).slice(0, 800)}`
+        })
+        addAgentMessage(`**Execution results**\n${lines.join('\n\n')}`)
+      }
+
+      if (
+        !instruct.reasoning?.trim() &&
+        (!instruct.functionCalls || instruct.functionCalls.length === 0)
+      ) {
+        addAgentMessage(
+          'No Gemini reasoning returned. Check GEMINI_API_KEY and backend logs. Raw response may be attached in server logs.',
+        )
+      }
+
+      toast.success('Captain Whiskers processed your instruction')
+      setTimeout(() => refreshWallet(), 1500)
+
+      onInsightsChange?.({
+        ...preview,
+        confidence: Math.min(1, 0.5 + (instruct.functionCalls?.length ?? 0) * 0.1),
+      })
+    } catch (error: any) {
+      console.error('Instruct failed:', error)
+      toast.error(error?.message || 'Backend instruct failed — is the API running?')
       try {
-        const result = await api.autoLoginDemo(wallet?.address)
-        if (!result) {
-          // Generate smart commerce response even in preview mode
-          const smartResponse = generateCommerceResponse(preview.intent, preview, true)
-          addAgentMessage(smartResponse)
-          addAgentMessage(
-            `📊 Analysis: ${preview.intent} | Confidence: ${Math.round(preview.confidence * 100)}% | Risk: ${Math.round(preview.risk * 100)}% | ETA: ~${preview.latency.toFixed(1)}s`,
-          )
-          setIsTyping(false)
-          onMoodChange?.('happy')
-          return
+        const result = await api.makeAgentDecision({
+          instruction: userInput,
+          portfolioState: wallet?.balance || {},
+          marketData: {},
+          riskTolerance: 0.5,
+        })
+        if (result.explanation) {
+          addAgentMessage(result.explanation)
         }
       } catch {
         const smartResponse = generateCommerceResponse(preview.intent, preview, true)
         addAgentMessage(smartResponse)
-        setIsTyping(false)
-        onMoodChange?.('happy')
-        return
       }
-    }
-
-    try {
-      // Generate smart commerce response
-      const smartResponse = generateCommerceResponse(preview.intent, preview, isSimulation)
-      addAgentMessage(smartResponse)
-
-      // Simulate processing delay for better UX
-      await delay(400)
-
-      // Call backend agent API
-      const result = await api.makeAgentDecision({
-        instruction: userInput,
-        portfolioState: wallet?.balance || {},
-        marketData: {},
-        riskTolerance: 0.5,
-      })
-
-      // Handle different intent types with appropriate responses
-      if (preview.intent === 'Transfer' && preview.amount > 0) {
-        const txHash = createMockHash()
-        addAgentMessage(
-          `✅ Transfer complete! ${preview.amount} ${preview.token || 'USDC'} sent successfully.`,
-          'transaction',
-          { hash: txHash, amount: String(preview.amount), token: preview.token || 'USDC', status: 'confirmed' }
-        )
-        toast.success(`Transfer of ${preview.amount} ${preview.token || 'USDC'} confirmed!`)
-      } else if (preview.intent === 'Optimization') {
-        addAgentMessage(
-          `✅ Portfolio optimized! New allocation applied with ${Math.round(preview.confidence * 100)}% confidence.\n\n` +
-          `📈 Expected improvement: +${(Math.random() * 5 + 2).toFixed(1)}% risk-adjusted return`,
-          'confirmation'
-        )
-        toast.success('Portfolio optimization complete!')
-      } else if (preview.intent === 'Verification') {
-        addAgentMessage(
-          `✅ BFT Verification complete! 9/11 nodes confirmed.\n\n` +
-          `🔐 Consensus achieved in ${preview.latency.toFixed(1)}s`,
-          'confirmation'
-        )
-        toast.success('Verification successful!')
-      } else if (result.explanation) {
-        addAgentMessage(result.explanation)
-      } else {
-        addAgentMessage(
-          `✅ Request processed. ${result.decisionId ? `Decision ID: ${result.decisionId}` : 'Action queued for BFT verification.'}`
-        )
-      }
-
-      if (result.decisionId) {
-        setTimeout(() => refreshWallet(), 2000)
-      }
-    } catch (error: any) {
-      console.error('Agent request failed:', error)
-      // Graceful fallback with smart response
-      const smartResponse = generateCommerceResponse(preview.intent, preview, true)
-      addAgentMessage(smartResponse)
-      addAgentMessage(
-        `📊 Preview: ${preview.intent} | Confidence: ${Math.round(preview.confidence * 100)}% | Risk: ${Math.round(preview.risk * 100)}%`
-      )
     } finally {
       setIsTyping(false)
       onMoodChange?.('happy')
@@ -767,14 +757,14 @@ export function AgentChat({ onMoodChange, onSpeakingChange, onInsightsChange }: 
             >
               <div
                 className={`max-w-[90%] px-4 py-2.5 rounded-2xl text-sm ${message.role === 'user'
-                    ? 'bg-primary text-white rounded-br-md'
-                    : message.type === 'transaction'
-                      ? 'bg-green-500/10 border border-green-500/20 rounded-bl-md'
-                      : message.type === 'error'
-                        ? 'bg-red-500/10 border border-red-500/20 rounded-bl-md'
-                        : message.type === 'confirmation'
-                          ? 'bg-primary/10 border border-primary/20 rounded-bl-md'
-                          : 'bg-dark-100 rounded-bl-md'
+                  ? 'bg-primary text-white rounded-br-md'
+                  : message.type === 'transaction'
+                    ? 'bg-green-500/10 border border-green-500/20 rounded-bl-md'
+                    : message.type === 'error'
+                      ? 'bg-red-500/10 border border-red-500/20 rounded-bl-md'
+                      : message.type === 'confirmation'
+                        ? 'bg-primary/10 border border-primary/20 rounded-bl-md'
+                        : 'bg-dark-100 rounded-bl-md'
                   }`}
               >
                 <div className="whitespace-pre-wrap">{message.content}</div>

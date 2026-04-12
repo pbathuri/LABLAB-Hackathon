@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -21,6 +21,11 @@ contract MockUSDC is ERC20 {
      * @notice Faucet function for testing
      */
     function faucet(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
+
+    /// @notice Alias for scripts / tests
+    function mint(address to, uint256 amount) external {
         _mint(to, amount);
     }
 }

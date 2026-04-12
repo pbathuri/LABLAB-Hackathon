@@ -6,7 +6,7 @@
  *   cd contracts && npx ts-node --transpile-only scripts/submit-hackathon-intent.ts
  *   RECORD=1 npx ts-node --transpile-only scripts/submit-hackathon-intent.ts
  *
- * Env: BASE_SEPOLIA_RPC, AGENT_PRIVATE_KEY, HACKATHON_RISK_ROUTER,
+ * Env: BASE_SEPOLIA_RPC, AGENT_PRIVATE_KEY, BASE_CAPITAL_SANDBOX_ROUTER (or legacy HACKATHON_RISK_ROUTER for Base-only validateIntent),
  *      MOCK_USDC_ADDRESS, MOCK_WETH_ADDRESS, optional AMOUNT_USDC (default 1000000 = 1 USDC 6dp)
  */
 import { ethers } from 'ethers';
@@ -25,12 +25,15 @@ async function main() {
   const rpc =
     process.env.BASE_SEPOLIA_RPC?.trim() || 'https://sepolia.base.org';
   const pk = process.env.AGENT_PRIVATE_KEY?.trim();
-  const routerAddr = process.env.HACKATHON_RISK_ROUTER?.trim();
+  const routerAddr =
+    process.env.BASE_CAPITAL_SANDBOX_ROUTER?.trim() ||
+    process.env.HACKATHON_LEGACY_BASE_ROUTER?.trim() ||
+    process.env.HACKATHON_RISK_ROUTER?.trim();
   const usdc = process.env.MOCK_USDC_ADDRESS?.trim();
   const weth = process.env.MOCK_WETH_ADDRESS?.trim();
   if (!pk || !routerAddr || !usdc || !weth) {
     throw new Error(
-      'Set AGENT_PRIVATE_KEY, HACKATHON_RISK_ROUTER, MOCK_USDC_ADDRESS, MOCK_WETH_ADDRESS',
+      'Set AGENT_PRIVATE_KEY, BASE_CAPITAL_SANDBOX_ROUTER (or HACKATHON_RISK_ROUTER legacy), MOCK_USDC_ADDRESS, MOCK_WETH_ADDRESS',
     );
   }
 

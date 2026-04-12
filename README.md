@@ -19,7 +19,7 @@
 
 Explorer: [Base Sepolia](https://sepolia.basescan.org). ERC-8004 agent: set `ERC8004_AGENT_ID` then view on [8004agents.ai/base](https://8004agents.ai/base).
 
-Built for the **LabLab AI Trading Agents Hackathon** (ERC-8004 + optional Kraken tracks) on **Base Sepolia** — autonomous trading with on-chain identity, RiskRouter limits, and Gemini-driven execution. *Arc × Circle* references in older docs refer to an earlier program; this repo targets the current LabLab / Surge submission path.
+Built for the **LabLab AI Trading Agents Hackathon** (ERC-8004 + optional Kraken tracks) on **Base Sepolia** — autonomous trading with on-chain identity, RiskRouter limits, and Gemini-driven execution. _Arc × Circle_ references in older docs refer to an earlier program; this repo targets the current LabLab / Surge submission path.
 
 ![Captain Whiskers Banner](./docs/banner.png)
 
@@ -275,4 +275,4 @@ MIT License - See [LICENSE](./LICENSE)
 
 **🐱 Meow! Happy Trading with Captain Whiskers!**
 
-*Built with ❤️ for the Arc × Circle Hackathon*
+_Built with ❤️ for the Arc × Circle Hackathon_

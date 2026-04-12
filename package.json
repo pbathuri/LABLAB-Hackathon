@@ -3,12 +3,21 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "apps/*",
+    "apps/backend",
+    "apps/frontend",
+    "apps/quantum-service",
     "packages/*"
   ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:frontend": "npm run dev -w @captain-whiskers/frontend",
+    "dev:frontend:clean": "npm run dev:clean -w @captain-whiskers/frontend",
+    "dev:frontend:host": "npm run dev:host -w @captain-whiskers/frontend",
+    "dev:frontend:clean:host": "npm run dev:clean:host -w @captain-whiskers/frontend",
+    "dev:backend": "npm run dev -w @captain-whiskers/backend",
+    "diagnose": "bash scripts/diagnose.sh",
+    "demo-recording": "bash scripts/demo-recording.sh",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

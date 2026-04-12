@@ -2,15 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { applyResolvedBaseSepoliaRpc } from './common/rpc.util';
+import { buildCorsConfig } from './common/cors.util';
+
+applyResolvedBaseSepoliaRpc();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
-  app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-  });
+  app.enableCors(buildCorsConfig());
 
   // Global validation pipe
   app.useGlobalPipes(
@@ -33,17 +33,24 @@ async function bootstrap() {
     .addTag('wallet', 'Wallet management')
     .addTag('quantum', 'Quantum treasury optimization')
     .addTag('verification', 'Byzantine consensus verification')
-    .addTag('micropayments', 'x402 micropayment operations')
     .addTag('policy', 'Policy enforcement')
+    .addTag('kraken', 'Kraken CLI paper & market')
+    .addTag('prism', 'PRISM market intelligence')
+    .addTag('identity', 'ERC-8004 agent identity')
+    .addTag('risk', 'On-chain RiskRouter')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  if (process.env.NODE_ENV !== 'production') {
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+  }
 
-  const port = process.env.PORT || 4000;
+  const port = process.env.PORT || process.env.BACKEND_PORT || 3001;
   await app.listen(port);
-  console.log(`🐱 Captain Whiskers API running on http://localhost:${port}`);
-  console.log(`📚 Swagger docs available at http://localhost:${port}/api`);
+  console.log(`Captain Whiskers API running on http://localhost:${port}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Swagger docs at http://localhost:${port}/api`);
+  }
 }
 
 bootstrap();

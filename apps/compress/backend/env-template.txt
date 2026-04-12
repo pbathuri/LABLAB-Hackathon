@@ -1,0 +1,45 @@
+# Captain Whiskers Backend Environment Variables
+# Copy to .env and fill values
+
+# ===========================================
+# Core
+# ===========================================
+NODE_ENV=development
+PORT=3001
+ARC_CHAIN_ID=5042002
+ARC_RPC_URL=https://testnet-rpc.arc.dev
+USDC_CONTRACT=0xYourUSDCContractAddress
+
+# ===========================================
+# Database
+# ===========================================
+DATABASE_URL=postgresql://user:password@host:5432/dbname
+
+# ===========================================
+# Auth
+# ===========================================
+JWT_SECRET=change-me
+
+# ===========================================
+# Circle Console Integrations
+# ===========================================
+CIRCLE_CONSOLE_URL=https://console.circle.com
+
+# Circle Wallets (Programmable Wallets)
+CIRCLE_WALLET_API_KEY=
+
+# Circle Gateway
+CIRCLE_GATEWAY_API_KEY=
+CIRCLE_GATEWAY_URL=
+
+# Circle Bridge Kit
+CIRCLE_BRIDGE_API_KEY=
+CIRCLE_BRIDGE_URL=
+
+# x402 Facilitator
+X402_FACILITATOR_URL=
+X402_FACILITATOR_KEY=
+
+# Circle AI App Builder (beta)
+CIRCLE_APP_BUILDER_ENABLED=false
+CIRCLE_APP_BUILDER_PROJECT_ID=

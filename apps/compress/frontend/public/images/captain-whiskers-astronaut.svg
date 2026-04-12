@@ -1,0 +1,43 @@
+<svg width="40" height="40" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Astronaut Cat - Simplified version for logo -->
+  <defs>
+    <linearGradient id="catGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FF8C42" />
+      <stop offset="100%" stopColor="#FF6B35" />
+    </linearGradient>
+    <linearGradient id="suitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FFFFFF" />
+      <stop offset="100%" stopColor="#F0F0F0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Helmet -->
+  <circle cx="200" cy="150" r="100" fill="url(#suitGradient)" stroke="#E0E0E0" strokeWidth="2"/>
+  <ellipse cx="200" cy="150" rx="80" ry="70" fill="none" stroke="#D0D0D0" strokeWidth="1"/>
+  
+  <!-- Cat Head -->
+  <ellipse cx="200" cy="180" rx="60" ry="50" fill="url(#catGradient)"/>
+  
+  <!-- Ears -->
+  <path d="M150 140 L130 100 L170 120 Z" fill="url(#catGradient)"/>
+  <path d="M250 140 L270 100 L230 120 Z" fill="url(#catGradient)"/>
+  
+  <!-- Eyes -->
+  <circle cx="180" cy="175" r="8" fill="#FFD700"/>
+  <circle cx="220" cy="175" r="8" fill="#FFD700"/>
+  <circle cx="182" cy="173" r="3" fill="#000"/>
+  <circle cx="222" cy="173" r="3" fill="#000"/>
+  
+  <!-- Nose -->
+  <ellipse cx="200" cy="190" rx="4" ry="3" fill="#FF69B4"/>
+  
+  <!-- Visor Reflection -->
+  <ellipse cx="200" cy="140" rx="60" ry="40" fill="none" stroke="#1a1a1a" strokeWidth="3" opacity="0.6"/>
+  
+  <!-- Suit Body -->
+  <ellipse cx="200" cy="280" rx="70" ry="60" fill="url(#suitGradient)" stroke="#E0E0E0" strokeWidth="2"/>
+  
+  <!-- Life Support Pack -->
+  <rect x="260" y="240" width="30" height="50" rx="5" fill="#C0C0C0"/>
+  <rect x="265" y="245" width="20" height="5" fill="#808080"/>
+</svg>

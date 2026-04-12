@@ -3,18 +3,18 @@ version: '3.8'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: captain-whiskers-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: captain_whiskers
+      POSTGRES_DB: captain_whiskers_v2
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -41,15 +41,16 @@ services:
       - DB_PORT=5432
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
-      - DB_NAME=captain_whiskers
+      - DB_NAME=captain_whiskers_v2
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - QUANTUM_SERVICE_URL=http://quantum:8000
-      - GEMINI_API_KEY=your-gemini-api-key-here
-      - CIRCLE_API_KEY=your-circle-api-key-here
-      - PRIVATE_KEY=your-ethereum-private-key-here
-      - TREASURY_ADDRESS=0x5B8648f8BE56A43C926783CA0E51FbD0540822B4
-      - ARC_RPC_URL=https://rpc.testnet.arc.network
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - PRISM_API_KEY=${PRISM_API_KEY:-}
+      - BASE_SEPOLIA_RPC=${BASE_SEPOLIA_RPC:-}
+      - ALCHEMY_API_KEY=${ALCHEMY_API_KEY:-}
+      - DEPLOYER_PRIVATE_KEY=${DEPLOYER_PRIVATE_KEY:-}
+      - AGENT_PRIVATE_KEY=${AGENT_PRIVATE_KEY:-}
     ports:
       - "4001:3001"
     depends_on:

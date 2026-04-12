@@ -51,13 +51,23 @@ export class RiskService {
       this.logger.warn('RISK_ROUTER_ADDRESS not set — on-chain risk checks skipped');
     }
 
-    const hack = process.env.HACKATHON_RISK_ROUTER?.trim();
-    if (hack) {
-      this.hackathonRead = new ethers.Contract(hack, RISK_ROUTER_ABI, provider);
+    // Sepolia leaderboard RiskRouter uses submitTradeIntent + different ABI — use HackathonService only.
+    // Base Sepolia Capital Sandbox (validateIntent / recordTradeExecution) uses this env:
+    const sandbox =
+      process.env.BASE_CAPITAL_SANDBOX_ROUTER?.trim() ||
+      process.env.HACKATHON_LEGACY_BASE_ROUTER?.trim();
+    if (sandbox) {
+      this.hackathonRead = new ethers.Contract(sandbox, RISK_ROUTER_ABI, provider);
       if (wallet) {
-        this.hackathonWrite = new ethers.Contract(hack, RISK_ROUTER_ABI, wallet);
+        this.hackathonWrite = new ethers.Contract(sandbox, RISK_ROUTER_ABI, wallet);
       }
-      this.logger.log(`Hackathon RiskRouter: ${hack}`);
+      this.logger.log(`Base Capital Sandbox RiskRouter: ${sandbox}`);
+    }
+    if (process.env.HACKATHON_RISK_ROUTER?.trim() && !sandbox) {
+      this.logger.warn(
+        'HACKATHON_RISK_ROUTER is set but ignored here (Sepolia leaderboard router ABI differs). ' +
+        'Use HackathonModule for Sepolia intents. For Base validateIntent sandbox, set BASE_CAPITAL_SANDBOX_ROUTER.',
+      );
     }
   }
 
@@ -102,8 +112,8 @@ export class RiskService {
   }
 
   /**
-   * Validates against HACKATHON_RISK_ROUTER when set (shared Capital Sandbox).
-   * If unset, returns valid so local/demo flows keep working.
+   * Validates against BASE_CAPITAL_SANDBOX_ROUTER on Base Sepolia (same ABI as RISK_ROUTER_ADDRESS).
+   * Sepolia hackathon leaderboard router is not used here — see HackathonService.
    */
   async validateHackathonIntent(
     intent: TradeIntentStruct,
