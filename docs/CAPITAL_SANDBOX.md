@@ -8,7 +8,7 @@ Use these names consistently in `.env` (see root `.env.example`):
 
 | Variable | Purpose |
 |----------|---------|
-| `HACKATHON_RISK_ROUTER` | Shared sandbox **RiskRouter** — backend validates and records paper trades here when set (`RiskService` + `GeminiFunctionExecutorService`). |
+| `HACKATHON_RISK_ROUTER` | Shared sandbox **RiskRouter** - backend validates and records paper trades here when set (`RiskService` + `GeminiFunctionExecutorService`). |
 | `HACKATHON_CAPITAL_VAULT` | Shared **ERC-4626** vault (reference for ops / future wiring; not required for current executor path). |
 
 Legacy aliases like `HACKATHON_VAULT_ADDRESS` / `HACKATHON_RISK_ROUTER_ADDRESS` should be migrated to the names above to match the code.

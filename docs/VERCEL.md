@@ -10,7 +10,7 @@ Use **two Vercel projects** (one Next.js app, one Nest API). Connect the same Gi
 
 | Variable | Required | Notes |
 |----------|----------|--------|
-| `USE_POSTGRES` | Yes | `true` — SQLite / `better-sqlite3` is not supported on Vercel. |
+| `USE_POSTGRES` | Yes | `true` - SQLite / `better-sqlite3` is not supported on Vercel. |
 | `DATABASE_URL` | Yes | Neon, Supabase, or other Postgres (SSL). |
 | `GEMINI_API_KEY` | For AI | |
 | `PRISM_API_KEY` | For signals | |

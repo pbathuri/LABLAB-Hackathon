@@ -9,12 +9,12 @@
 
 ## Hour 0–1: Registration and credentials
 
-1. **early.surge.xyz** — Register the project for prize eligibility (use organizer-provided access only; never paste passwords into the repo).
-2. **lablab.ai** — Confirm team / project exists for submission.
+1. **early.surge.xyz** - Register the project for prize eligibility (use organizer-provided access only; never paste passwords into the repo).
+2. **lablab.ai** - Confirm team / project exists for submission.
 3. **Rotate** any API key that appeared in chat exports or logs: Kraken, Gemini, PRISM, Alchemy, Pinata, WalletConnect, etc.
-4. **Kraken read-only key** — For leaderboard verification if required: Query Funds + Query Open Orders & Trades only.
-5. **`.env`** — Refresh keys; restart backend; smoke-test PRISM and Gemini.
-6. **ERC-8004 registry** — From repo root:
+4. **Kraken read-only key** - For leaderboard verification if required: Query Funds + Query Open Orders & Trades only.
+5. **`.env`** - Refresh keys; restart backend; smoke-test PRISM and Gemini.
+6. **ERC-8004 registry** - From repo root:
 
    ```bash
    cd contracts && npm run verify:erc8004-registry
@@ -30,7 +30,7 @@
 4. Host **agent card**: Pinata (`npm run upload:agent-card`) or raw GitHub URL to [`agent-card.json`](agent-card.json).
 5. Register: `npm run register:erc8004 -- '<agentURI>'` or `POST /api/identity/register`.
 6. Set `ERC8004_AGENT_ID` after registration; run `npm run post:reputation`.
-7. **Shared Capital Sandbox** — See [CAPITAL_SANDBOX.md](CAPITAL_SANDBOX.md); integrate hackathon vault/router if required for leaderboard intents.
+7. **Shared Capital Sandbox** - See [CAPITAL_SANDBOX.md](CAPITAL_SANDBOX.md); integrate hackathon vault/router if required for leaderboard intents.
 8. `TRADING_LOOP_ENABLED=true` (and `TRADING_LOOP_INIT_PAPER=true` as needed); confirm agent on **lablab** leaderboard.
 
 ## Submission assets
@@ -58,7 +58,7 @@ cd contracts && npm run set:agent-uri -- '<https://raw.githubusercontent.com/...
 
 ## Deploy demo (Vercel + Railway)
 
-1. **Vercel:** Import GitHub repo; root directory **`apps/frontend`**; framework Next.js; env **`NEXT_PUBLIC_API_URL`** = public backend URL (no trailing slash issues — match your API host). Optional config: [`apps/frontend/vercel.json`](../apps/frontend/vercel.json).
+1. **Vercel:** Import GitHub repo; root directory **`apps/frontend`**; framework Next.js; env **`NEXT_PUBLIC_API_URL`** = public backend URL (no trailing slash issues - match your API host). Optional config: [`apps/frontend/vercel.json`](../apps/frontend/vercel.json).
 2. **Railway / Render / Fly:** Deploy **`apps/backend`** (or Dockerfile); set all secrets from `.env.example`; **`USE_POSTGRES=false`**; **`FRONTEND_ORIGIN`** = `https://<your-app>.vercel.app` for CORS. Optional config: [`apps/backend/railway.json`](../apps/backend/railway.json).
 3. Re-run **`set:agent-uri`** if the agent card URL changed.
 

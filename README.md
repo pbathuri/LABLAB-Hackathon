@@ -2,7 +2,7 @@
 
 # Captain Whiskers 🐱
 
-**Trustless AI agent + quantum-aware treasury management — built for the LabLab AI Trading Agents Hackathon.**
+**Trustless AI agent + quantum-aware treasury management - built for the LabLab AI Trading Agents Hackathon.**
 
 <br/>
 
@@ -58,12 +58,12 @@ npm run demo-recording
 ### 🧠 AI-powered treasury
 - **Gemini** Flash/Pro for natural-language trade instructions
 - **Function calling** for automated execution based on user intent
-- **Explainable AI** — Captain Whiskers mascot narrates every decision
+- **Explainable AI** - Captain Whiskers mascot narrates every decision
 
 ### ⚛️ Quantum
-- **VQE portfolio optimisation** — Variational Quantum Eigensolver for Markowitz
-- **Qiskit** — ready for real quantum hardware
-- **QRNG** — quantum random for cryptographic nonces
+- **VQE portfolio optimisation** - Variational Quantum Eigensolver for Markowitz
+- **Qiskit** - ready for real quantum hardware
+- **QRNG** - quantum random for cryptographic nonces
 
 ### 🔐 Post-quantum security
 - **CRYSTALS-Dilithium** lattice signatures (quantum-resistant)
@@ -112,7 +112,7 @@ flowchart TB
 
 ## Track context
 
-Built for the **LabLab AI Trading Agents Hackathon** — ERC-8004 + optional Kraken tracks on **Base Sepolia**. Older docs reference *Arc × Circle*; that was an earlier program. This repo targets the current LabLab / Surge submission path.
+Built for the **LabLab AI Trading Agents Hackathon** - ERC-8004 + optional Kraken tracks on **Base Sepolia**. Older docs reference *Arc × Circle*; that was an earlier program. This repo targets the current LabLab / Surge submission path.
 
 ![Captain Whiskers Banner](./docs/banner.png)
 

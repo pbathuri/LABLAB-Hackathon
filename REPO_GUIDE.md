@@ -1,6 +1,6 @@
-# Captain Whiskers — Repository guide (full context)
+# Captain Whiskers - Repository guide (full context)
 
-This document is written for **any reader or automated assistant with no prior context**: what the repo is, how it is organized, how to run it step by step, and **what each important file and folder is for**. Generated artifacts (`node_modules`, `.next`, Hardhat `artifacts`/`cache`/`typechain-types`, etc.) are summarized once—not enumerated file-by-file.
+This document is written for **any reader or automated assistant with no prior context**: what the repo is, how it is organized, how to run it step by step, and **what each important file and folder is for**. Generated artifacts (`node_modules`, `.next`, Hardhat `artifacts`/`cache`/`typechain-types`, etc.) are summarized once-not enumerated file-by-file.
 
 ---
 
@@ -9,9 +9,9 @@ This document is written for **any reader or automated assistant with no prior c
 **Captain Whiskers** is a **monorepo** for an **agentic commerce / treasury** demo:
 
 - **Frontend:** Next.js 14 (App Router), dashboard UI, wallet connect, charts.
-- **Backend:** NestJS REST API — agent decisions, Kraken market/paper trading CLI integration, PRISM market data, Gemini instructions, ERC-8004 identity hooks, optional on-chain risk router, scheduled trading loop.
-- **Quantum service (optional):** Python FastAPI — portfolio optimization, QRNG, Dilithium-related helpers (used when `QUANTUM_SERVICE_URL` points to it).
-- **Smart contracts:** Hardhat + Solidity — treasury, BFT verification, x402 escrow, mocks, risk router, capital vault (deploy to Base Sepolia or other configured networks).
+- **Backend:** NestJS REST API - agent decisions, Kraken market/paper trading CLI integration, PRISM market data, Gemini instructions, ERC-8004 identity hooks, optional on-chain risk router, scheduled trading loop.
+- **Quantum service (optional):** Python FastAPI - portfolio optimization, QRNG, Dilithium-related helpers (used when `QUANTUM_SERVICE_URL` points to it).
+- **Smart contracts:** Hardhat + Solidity - treasury, BFT verification, x402 escrow, mocks, risk router, capital vault (deploy to Base Sepolia or other configured networks).
 
 **Primary working tree:** everything under `apps/backend`, `apps/frontend`, `apps/quantum-service`, `contracts`, `packages/shared`, `deployment`, `scripts`.
 
@@ -59,7 +59,7 @@ This document is written for **any reader or automated assistant with no prior c
 
    If Next.js chunks misbehave: `npm run dev:frontend:clean` (see `apps/frontend/scripts/clean-next.sh`).
 
-6. **Optional — quantum service:**
+6. **Optional - quantum service:**
 
    ```bash
    cd apps/quantum-service
@@ -69,11 +69,11 @@ This document is written for **any reader or automated assistant with no prior c
 
    Default URL in `.env.example`: `http://localhost:8000`.
 
-7. **Optional — contracts:** `cd contracts && npm install && npx hardhat compile`. Deploy scripts live in `contracts/scripts/`.
+7. **Optional - contracts:** `cd contracts && npm install && npx hardhat compile`. Deploy scripts live in `contracts/scripts/`.
 
 **URLs (typical):**
 
-- API: `http://localhost:3001` — Swagger at `/api`
+- API: `http://localhost:3001` - Swagger at `/api`
 - UI: `http://localhost:3000`
 - Quantum: `http://localhost:8000`
 
@@ -90,25 +90,25 @@ This document is written for **any reader or automated assistant with no prior c
 | `.gitignore` | Ignores `node_modules`, `.env`, `.next`, Hardhat outputs, etc. |
 | `.dockerignore` | Docker build context exclusions. |
 | `README.md` | Product/architecture overview and quick links. |
-| **`REPO_GUIDE.md`** | **This file** — full repo map for builders and tools. |
+| **`REPO_GUIDE.md`** | **This file** - full repo map for builders and tools. |
 | `SUBMISSION_CHECKLIST.md` | Hackathon submission checklist. |
 | `TESTING_GUIDE.md` | Testing notes. |
 | `TRANSACTION_WORKFLOW.md` | Transaction flow documentation. |
 | `CIRCLE_TECH_DEEPDIVE.md` | Circle-related technical notes. |
 | `scripts/demo.sh` | Curl-based smoke demo against `NEXT_PUBLIC_API_URL` (default `http://localhost:3001`). |
-| `deployment/` | Docker Compose, Railway notes, env templates, helper shell scripts — see §10. |
-| `contracts/` | Hardhat project — see §8. |
-| `packages/shared/` | Shared TS constants — see §9. |
-| `apps/backend/` | NestJS API — see §5. |
-| `apps/frontend/` | Next.js UI — see §6. |
-| `apps/quantum-service/` | Python service — see §7. |
-| `apps/compress/` | **Legacy/archive tree** — duplicate apps; not primary. |
+| `deployment/` | Docker Compose, Railway notes, env templates, helper shell scripts - see §10. |
+| `contracts/` | Hardhat project - see §8. |
+| `packages/shared/` | Shared TS constants - see §9. |
+| `apps/backend/` | NestJS API - see §5. |
+| `apps/frontend/` | Next.js UI - see §6. |
+| `apps/quantum-service/` | Python service - see §7. |
+| `apps/compress/` | **Legacy/archive tree** - duplicate apps; not primary. |
 
 Binary/media at root (e.g. `.pdf`, `.mp4`, `.zip`) are **documentation or presentation assets**; they are not required to compile code.
 
 ---
 
-## 5. `apps/backend` — NestJS API
+## 5. `apps/backend` - NestJS API
 
 ### 5.1 Entry and app shell
 
@@ -123,7 +123,7 @@ Binary/media at root (e.g. `.pdf`, `.mp4`, `.zip`) are **documentation or presen
 
 | File | Purpose |
 |------|---------|
-| `src/common/eth-key.util.ts` | `isValidHexPrivateKey()` — validates Ethereum hex private keys (not Base64/API secrets). |
+| `src/common/eth-key.util.ts` | `isValidHexPrivateKey()` - validates Ethereum hex private keys (not Base64/API secrets). |
 | `src/common/rpc.util.ts` | Resolves Base Sepolia RPC: explicit `BASE_SEPOLIA_RPC`, else `ALCHEMY_API_KEY` → Alchemy URL, else public `https://sepolia.base.org`. |
 
 ### 5.3 Modules (feature folders)
@@ -144,8 +144,8 @@ Each module typically contains `*.module.ts`, `*.controller.ts`, `*.service.ts`,
 | `modules/erc8004/` | ERC-8004 identity/reputation on Base Sepolia, `agent-identity.entity.ts`, register/status APIs. |
 | `modules/risk/` | On-chain risk validation when `RISK_ROUTER_ADDRESS` is set. |
 | `modules/aerodrome/` | Aerodrome router/factory references for swaps (config-driven). |
-| `modules/circle/` | Circle gateway entities/services — **module exists; not imported in `AppModule`**. |
-| `modules/micropayment/` | x402-style payment requests — **module exists; not imported in `AppModule`**. |
+| `modules/circle/` | Circle gateway entities/services - **module exists; not imported in `AppModule`**. |
+| `modules/micropayment/` | x402-style payment requests - **module exists; not imported in `AppModule`**. |
 
 ### 5.4 Tests and config
 
@@ -164,11 +164,11 @@ Each module typically contains `*.module.ts`, `*.controller.ts`, `*.service.ts`,
 
 | Path | Purpose |
 |------|---------|
-| `dist/` | **Compiled JavaScript** after `nest build` — do not edit; regenerate from source. |
+| `dist/` | **Compiled JavaScript** after `nest build` - do not edit; regenerate from source. |
 
 ---
 
-## 6. `apps/frontend` — Next.js 14 (App Router)
+## 6. `apps/frontend` - Next.js 14 (App Router)
 
 ### 6.1 Config and tooling
 
@@ -228,11 +228,11 @@ Each module typically contains `*.module.ts`, `*.controller.ts`, `*.service.ts`,
 
 | Path | Purpose |
 |------|---------|
-| `.next/` | **Next.js build cache** — safe to delete (`npm run clean:next` or `clean-next.sh`). |
+| `.next/` | **Next.js build cache** - safe to delete (`npm run clean:next` or `clean-next.sh`). |
 
 ---
 
-## 7. `apps/quantum-service` — Python FastAPI
+## 7. `apps/quantum-service` - Python FastAPI
 
 | File | Purpose |
 |------|---------|
@@ -243,11 +243,11 @@ Each module typically contains `*.module.ts`, `*.controller.ts`, `*.service.ts`,
 | `crypto/dilithium_service.py` | Post-quantum signing helpers (Dilithium-oriented). |
 | `rl/trading_agent.py` | RL-style trading agent experiment. |
 | `tests/test_portfolio_optimizer.py` | Tests. |
-| `Dockerfile` | If present — container image for this service. |
+| `Dockerfile` | If present - container image for this service. |
 
 ---
 
-## 8. `contracts/` — Hardhat + Solidity
+## 8. `contracts/` - Hardhat + Solidity
 
 ### 8.1 Source contracts (`src/`)
 

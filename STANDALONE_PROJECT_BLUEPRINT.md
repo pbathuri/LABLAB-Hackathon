@@ -1,24 +1,24 @@
-# Captain Whiskers — Standalone project blueprint
+# Captain Whiskers - Standalone project blueprint
 
 **Audience:** You have **only this file**. You do **not** have the repository. Your goal is to **understand why the system was built** and **how to recreate an equivalent system from zero**.
 
-**What this is:** A hackathon-grade **agentic commerce / AI treasury** platform named *Captain Whiskers*. It combines a **web dashboard**, a **NestJS control plane**, optional **Python “quantum” microservice**, **Solidity contracts** (Base Sepolia–oriented), and integrations with **LLMs**, **market data APIs**, **Kraken** (CLI paper/live), and **ERC-8004** agent identity. The original developers framed it around **trust minimization**, **explainable agent decisions**, **simulated Byzantine verification**, and **quantum-themed** portfolio tooling—some layers are **production-shaped**, others are **demonstration** (in-memory DB, simulated verifiers).
+**What this is:** A hackathon-grade **agentic commerce / AI treasury** platform named *Captain Whiskers*. It combines a **web dashboard**, a **NestJS control plane**, optional **Python “quantum” microservice**, **Solidity contracts** (Base Sepolia–oriented), and integrations with **LLMs**, **market data APIs**, **Kraken** (CLI paper/live), and **ERC-8004** agent identity. The original developers framed it around **trust minimization**, **explainable agent decisions**, **simulated Byzantine verification**, and **quantum-themed** portfolio tooling-some layers are **production-shaped**, others are **demonstration** (in-memory DB, simulated verifiers).
 
 ---
 
-## Part A — Developer intent
+## Part A - Developer intent
 
 ### A.1 Thesis
 
 1. **Autonomous trading assistance:** An AI agent should accept **natural-language instructions**, combine them with **live or paper market context**, and produce **traceable decisions** (what to trade, why).
 2. **Composable services:** Separate **UI**, **API**, **on-chain risk/identity**, and **quantum/math** into replaceable services so teams can demo **without** running every piece (e.g. SQLite memory + public RPC).
-3. **Hackathon storytelling:** Surface **BFT verification** (11 nodes, 7-of-11 style threshold), **post-quantum** crypto hooks, **x402 / escrow** contracts, and **Arc / Base** testnets—narrative depth even when some modules are stubs or not wired into the main app module.
+3. **Hackathon storytelling:** Surface **BFT verification** (11 nodes, 7-of-11 style threshold), **post-quantum** crypto hooks, **x402 / escrow** contracts, and **Arc / Base** testnets-narrative depth even when some modules are stubs or not wired into the main app module.
 4. **Safe demo path:** **Paper trading** via **Kraken CLI** avoids real funds; **Gemini** powers NL understanding; **PRISM** enriches signals when keys exist.
 
 ### A.2 Non-goals (as implemented)
 
 - **Not** a fully audited production exchange or custodial product.
-- **Circle** and **micropayment** Nest modules may exist in source trees but **are not always registered** in the main application module—treat as **optional / legacy wiring**.
+- **Circle** and **micropayment** Nest modules may exist in source trees but **are not always registered** in the main application module-treat as **optional / legacy wiring**.
 - **Quantum service** may run as a **thin FastAPI** placeholder; heavier Qiskit/VQE can be layered in later.
 
 ### A.3 Design choices (why these technologies)
@@ -36,7 +36,7 @@
 
 ---
 
-## Part B — What the system does (behavioral spec)
+## Part B - What the system does (behavioral spec)
 
 ### B.1 User-visible capabilities
 
@@ -57,11 +57,11 @@
 
 ### B.4 Verification layer (simulation)
 
-- **11 verifier nodes**, **f = 3** Byzantine tolerance, **2f+1 = 7** signatures required—implemented as a **service** with persisted logs, **not** necessarily 11 independent processes unless extended.
+- **11 verifier nodes**, **f = 3** Byzantine tolerance, **2f+1 = 7** signatures required-implemented as a **service** with persisted logs, **not** necessarily 11 independent processes unless extended.
 
 ---
 
-## Part C — Architecture (recreate this shape)
+## Part C - Architecture (recreate this shape)
 
 ```mermaid
 flowchart TB
@@ -108,7 +108,7 @@ flowchart TB
 
 ---
 
-## Part D — Repository layout you would recreate
+## Part D - Repository layout you would recreate
 
 You do not have the repo; recreate **conceptually**:
 
@@ -118,9 +118,9 @@ captain-whiskers/
   turbo.json
   .env.example
   apps/
-    backend/                # NestJS — primary API
-    frontend/               # Next.js 14 — dashboard
-    quantum-service/        # FastAPI — optional
+    backend/                # NestJS - primary API
+    frontend/               # Next.js 14 - dashboard
+    quantum-service/        # FastAPI - optional
   contracts/                # Hardhat + Solidity
   packages/shared/          # Shared TS constants (chain id, ERC-8004 addresses)
   deployment/               # docker-compose, hosting notes
@@ -129,7 +129,7 @@ captain-whiskers/
 
 ---
 
-## Part E — Backend specification (NestJS)
+## Part E - Backend specification (NestJS)
 
 ### E.1 Bootstrap
 
@@ -154,13 +154,13 @@ captain-whiskers/
 | **Verification** | BFT simulation, verifier nodes, logs, thresholds 11/7. |
 | **Quantum** | Proxy to `QUANTUM_SERVICE_URL`; QRNG + post-quantum helper services; `/quantum/optimize` etc. |
 
-**Optional / may exist unregistered:** **Circle**, **Micropayment** — implement only if you need those demos; original app may not import them.
+**Optional / may exist unregistered:** **Circle**, **Micropayment** - implement only if you need those demos; original app may not import them.
 
 ### E.3 Key HTTP routes (recreate contract)
 
 **Public / lightly guarded (check guards in implementation):**
 
-- `GET /` — health message.
+- `GET /` - health message.
 - `POST /auth/register`, `POST /auth/login`.
 - **Kraken:** `GET /api/kraken/ticker/:pair`, `GET /api/kraken/market/ohlc/:pair`, `POST /api/kraken/paper/init`, `POST /api/kraken/paper/buy`, `POST /api/kraken/paper/sell`, `GET /api/kraken/paper/status`, `GET /api/kraken/paper/history`.
 - **Agent instruct:** `POST /api/agent/instruct` body `{ "instruction": string }`.
@@ -168,18 +168,18 @@ captain-whiskers/
 - **PRISM:** under `/api/prism/...` (resolve price, signals, risk).
 - **Identity:** `POST /api/identity/register`, `POST /api/identity/feedback`, `GET /api/identity/status`.
 - **Risk:** `POST /api/risk/validate`.
-- **Verification / reliability / policy / quantum** — as per controllers.
+- **Verification / reliability / policy / quantum** - as per controllers.
 
 **JWT Bearer (`/agent/...` pattern):** `POST /agent/decide`, `POST /agent/execute/:id`, `GET /agent/explain/:id`, `GET /agent/history`.
 
 ### E.4 Utilities
 
-- **`isValidHexPrivateKey`:** 64 hex chars, optional `0x` — reject API secrets wrongly pasted as keys.
+- **`isValidHexPrivateKey`:** 64 hex chars, optional `0x` - reject API secrets wrongly pasted as keys.
 - **RPC resolution** as in Part E.1.
 
 ---
 
-## Part F — Frontend specification (Next.js)
+## Part F - Frontend specification (Next.js)
 
 ### F.1 Stack
 
@@ -198,7 +198,7 @@ captain-whiskers/
 
 ---
 
-## Part G — Quantum service (Python)
+## Part G - Quantum service (Python)
 
 ### G.1 Minimal viable product
 
@@ -213,7 +213,7 @@ captain-whiskers/
 
 ---
 
-## Part H — Smart contracts (Solidity + Hardhat)
+## Part H - Smart contracts (Solidity + Hardhat)
 
 ### H.1 Contracts to implement (names from project)
 
@@ -235,7 +235,7 @@ captain-whiskers/
 
 ---
 
-## Part I — Environment variables (complete conceptual list)
+## Part I - Environment variables (complete conceptual list)
 
 Copy pattern: **one `.env` at monorepo root** consumed by backend (nested search paths) and by Hardhat via `dotenv` path to parent.
 
@@ -264,14 +264,14 @@ Copy pattern: **one `.env` at monorepo root** consumed by backend (nested search
 
 ---
 
-## Part J — Recreate from scratch (phased checklist)
+## Part J - Recreate from scratch (phased checklist)
 
-### Phase 1 — Skeleton
+### Phase 1 - Skeleton
 
 1. Create **npm workspaces** monorepo with `apps/backend`, `apps/frontend`, `packages/shared`, root `package.json`, `turbo.json`.
 2. Add **`.env.example`** (no secrets).
 
-### Phase 2 — Backend MVP
+### Phase 2 - Backend MVP
 
 1. `nest new` or manual Nest **AppModule** + `main.ts` + Swagger.
 2. **ConfigModule** + **TypeORM** (SQLite memory first).
@@ -281,40 +281,40 @@ Copy pattern: **one `.env` at monorepo root** consumed by backend (nested search
 6. **TradingLoopService** + `@nestjs/schedule` + entity **TradingCycleLog**.
 7. **Verification** + **Policy** + **Wallet** + **Reliability** as needed for your demo scope.
 
-### Phase 3 — Frontend MVP
+### Phase 3 - Frontend MVP
 
 1. `create-next-app` App Router + Tailwind.
 2. **`Providers`**: Query + wagmi config.
 3. Dashboard routes and **`lib/api`** calls to backend.
 4. Env: `NEXT_PUBLIC_*`.
 
-### Phase 4 — Quantum service
+### Phase 4 - Quantum service
 
 1. FastAPI **main.py** + `/health` + `/optimize` placeholder.
 2. Point **`QUANTUM_SERVICE_URL`** at it; optionally extend Python modules.
 
-### Phase 5 — Contracts
+### Phase 5 - Contracts
 
 1. Hardhat project under **`contracts/`**.
 2. Implement Solidity files; **compile**; **deploy** to Base Sepolia; paste addresses into `.env`.
 
-### Phase 6 — Ops
+### Phase 6 - Ops
 
 1. **Docker Compose** for Postgres + Redis + services if needed.
 2. **CI**: `lint`, `test`, `build` on push.
 
 ---
 
-## Part K — Security and operational notes
+## Part K - Security and operational notes
 
 - **Never commit** real `.env` or private keys.
 - **Separate keys:** Kraken API secrets ≠ Ethereum private keys; validating hex prevents misconfiguration crashes.
 - **Public RPC** is rate-limited; **Alchemy** (or similar) for demos at scale.
-- **Swagger** on `/api` in dev — disable or protect in production.
+- **Swagger** on `/api` in dev - disable or protect in production.
 
 ---
 
-## Part L — How to know you succeeded
+## Part L - How to know you succeeded
 
 - Backend starts; Swagger loads; **paper Kraken** endpoints work if CLI installed.
 - **`POST /api/agent/instruct`** returns a structured response when `GEMINI_API_KEY` is set.
